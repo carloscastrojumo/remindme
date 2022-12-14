@@ -1,0 +1,10 @@
+storageType: yaml
+
+yaml:
+  name: notes.yaml
+
+mongo:
+  host: "localhost"
+  port: 27017
+  database: notes
+  collection: notes

@@ -1,0 +1,145 @@
+package mongo
+
+import (
+	"context"
+	"log"
+	"reflect"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/fatih/color"
+	"github.com/pkg/errors"
+
+	"github.com/carloscastrojumo/remindme/pkg/domain"
+	"github.com/carloscastrojumo/remindme/pkg/msg"
+)
+
+func connect(ctx context.Context) *mongo.Client {
+	client, err := mongo.Connect(ctx, options.Client().
+		ApplyURI("mongodb://localhost:27017"))
+
+	if err != nil {
+		log.Fatal("MongoDB not running", err)
+	}
+
+	return client
+}
+
+func disconnect(ctx context.Context, client *mongo.Client) {
+	if err := client.Disconnect(ctx); err != nil {
+		log.Fatal("MongoDB not running", err)
+	}
+}
+
+func Add(note domain.Note) domain.Response {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	client := connect(ctx)
+	collection := client.Database("notes").Collection("notes")
+	defer disconnect(ctx, client)
+
+	//check if note exists
+	res := collection.FindOne(ctx, bson.M{"command": note.Command})
+	if res.Err() == nil {
+		tmp := domain.Note{}
+		res.Decode(&tmp)
+		note.Id = tmp.Id
+		if reflect.DeepEqual(tmp, note) {
+			return domain.NewErrorResponse("Command already exists. Nothing to do!")
+		} else {
+			color.HiBlue("Command already exist but with different tags and description. Updating...")
+		}
+	}
+
+	// insert new note
+	if note.Id == primitive.NilObjectID {
+		note.Id = primitive.NewObjectID()
+		_, err := collection.InsertOne(ctx, note)
+
+		if err != nil {
+			return domain.NewErrorResponse("Error inserting note")
+		}
+
+		return domain.NewSuccessResponse("Note added!", &[]domain.Note{note})
+	} else {
+		// update existing note
+		_, err := collection.UpdateOne(ctx, bson.M{"_id": note.Id}, bson.M{"$set": note})
+
+		if err != nil {
+			return domain.NewErrorResponse("Error updating note")
+		}
+
+		return domain.NewSuccessResponse("Note updated successfully!", &[]domain.Note{note})
+	}
+}
+
+func Remove(id string, tags []string) (int, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	client := connect(ctx)
+	collection := client.Database("notes").Collection("notes")
+
+	var dr *mongo.DeleteResult
+	var err error
+
+	// delete note by id
+	if id != "" {
+		objID, err := primitive.ObjectIDFromHex(id)
+		n := &domain.Note{}
+		collection.FindOne(ctx, bson.M{"_id": objID}).Decode(n)
+
+		dr, err = collection.DeleteOne(ctx, bson.M{"_id": objID})
+		if err != nil {
+			return 0, errors.Wrap(err, "Error deleting note")
+		}
+	}
+
+	// delete all notes by tags
+	if len(tags) > 0 {
+		dr, err = collection.DeleteMany(ctx, bson.M{"tags": bson.M{"$in": tags}})
+		if err != nil {
+			return 0, errors.Wrap(err, "Error deleting note")
+		}
+	}
+
+	disconnect(ctx, client)
+
+	return int(dr.DeletedCount), nil
+}
+
+func List(tags []string) msg.Output {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	client := connect(ctx)
+	collection := client.Database("notes").Collection("notes")
+	defer disconnect(ctx, client)
+
+	notes := make(map[string]domain.Note)
+	for _, tag := range tags {
+		filter := bson.M{"tags": bson.M{"$in": []string{tag}}}
+		cur, err := collection.Find(ctx, filter)
+		if err != nil {
+			return msg.Error("Error listing notes: " + err)
+		}
+		for cur.Next(ctx) {
+			var n domain.Note
+			if err := cur.Decode(&n); err != nil {
+				msg.Error("Error listing notes: %s", err)
+			}
+			notes[n.Id.String()] = n
+		}
+	}
+
+	var result []domain.Note
+	for _, v := range notes {
+		result = append(result, v)
+	}
+
+	return domain.NewSuccessResponse("Notes listed successfully!", &result)
+}

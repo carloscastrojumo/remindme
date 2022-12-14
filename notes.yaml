@@ -1,0 +1,5 @@
+- id: "498081"
+  tags:
+    - foo
+  command: foo
+  description: Just an example
