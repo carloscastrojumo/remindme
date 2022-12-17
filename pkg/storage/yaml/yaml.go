@@ -28,7 +28,6 @@ type Config struct {
 
 func Initialize(config *Config) *Yaml {
 	// check if file exists, if not create it
-	// read file and unmarshal it to Notes struct
 	f, err := os.OpenFile(config.Name, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		log.Fatal(err)
@@ -38,8 +37,12 @@ func Initialize(config *Config) *Yaml {
 	f.Read([]byte{})
 
 	var notes []Note
-	if err := yaml.NewDecoder(f).Decode(&notes); err != nil {
-		return nil
+
+	// check if file siza > 0, if so read file and unmarshal it to Notes struct
+	if fi, _ := f.Stat(); fi.Size() > 0 {
+		if err := yaml.NewDecoder(f).Decode(&notes); err != nil {
+			return nil
+		}
 	}
 
 	return &Yaml{File: f, Notes: notes}
