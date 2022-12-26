@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"time"
 
 	yaml "gopkg.in/yaml.v3"
 )
@@ -63,6 +64,7 @@ func (y *Yaml) Insert(note interface{}) error {
 
 	// if it doesn't, create new one
 	// generate new id
+	rand.Seed(time.Now().UnixNano())
 	newNote.Id = strconv.Itoa(rand.Intn(1000000))
 
 	// append new note to notes
