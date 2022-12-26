@@ -75,6 +75,29 @@ func (s *Store) GetByTags(tags []string) (interface{}, error) {
 	return result, nil
 }
 
+func (s *Store) GetAll() (interface{}, error) {
+	notes := make(map[string]Note)
+	filter := bson.M{}
+	cur, err := s.db.Collection("notes").Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	for cur.Next(context.Background()) {
+		var n Note
+		if err := cur.Decode(&n); err != nil {
+			return nil, err
+		}
+		notes[n.Id.String()] = n
+	}
+
+	var result []Note
+	for _, v := range notes {
+		result = append(result, v)
+	}
+
+	return result, nil
+}
+
 func (s *Store) Delete(id string) error {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {

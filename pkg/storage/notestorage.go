@@ -13,6 +13,7 @@ type NoteStorage interface {
 	Insert(item interface{}) error
 	Get(id string) (interface{}, error)
 	GetByTags(tags []string) (interface{}, error)
+	GetAll() (interface{}, error)
 	Delete(id string) error
 }
 
@@ -75,6 +76,10 @@ func (s *NoteService) Get(id string) (interface{}, error) {
 
 func (s *NoteService) GetByTags(tags []string) (interface{}, error) {
 	return s.store.GetByTags(tags)
+}
+
+func (s *NoteService) GetAll() (interface{}, error) {
+	return s.store.GetAll()
 }
 
 func (s *NoteService) Remove(id string) error {

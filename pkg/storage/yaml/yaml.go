@@ -108,6 +108,10 @@ func (y *Yaml) GetByTags(tags []string) (interface{}, error) {
 	return filteredNotes, nil
 }
 
+func (y *Yaml) GetAll() (interface{}, error) {
+	return y.Notes, nil
+}
+
 func (y *Yaml) Delete(id string) error {
 	for i, note := range y.Notes {
 		if note.Id == id {
