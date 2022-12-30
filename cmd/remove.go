@@ -5,22 +5,34 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var id string
-
 var removeCmd = &cobra.Command{
 	Use:   "rm",
 	Short: "Add new note to the database",
 	Long:  `Add new note to the database`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := noteService.Remove(id); err != nil {
-			panic(err)
+		id, _ := cmd.Flags().GetString("id")
+		tags, _ := cmd.Flags().GetStringArray("tags")
+
+		if id != "" {
+			if err := noteService.Remove(id); err != nil {
+				color.Red("Error: %s", err)
+			} else {
+				color.Green("Note %s deleted", id)
+			}
 		}
-		color.Green("Note deleted successfully")
+
+		if len(tags) > 0 {
+			if err := noteService.RemoveByTags(tags); err != nil {
+				color.Red("Error while deleting notes by tags: %s", err)
+			} else {
+				color.Green("Notes with tags %s deleted", tags)
+			}
+		}
 	},
 }
 
 func init() {
-	removeCmd.Flags().StringVar(&id, "id", "", "ID of the note to remove")
-	removeCmd.Flags().StringArrayVar(&tags, "tags", []string{}, "Remove all notes from tags")
+	removeCmd.Flags().String("id", "", "ID of the note to remove")
+	removeCmd.Flags().StringArray("tags", []string{}, "Remove all notes from tags")
 	rootCmd.AddCommand(removeCmd)
 }

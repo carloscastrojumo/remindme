@@ -107,3 +107,15 @@ func (s *Store) Delete(id string) error {
 	_, err = s.db.Collection("notes").DeleteOne(context.Background(), filter)
 	return err
 }
+
+func (s *Store) DeleteByTags(tags []string) error {
+	for _, tag := range tags {
+		filter := bson.M{"tags": bson.M{"$in": []string{tag}}}
+		_, err := s.db.Collection("notes").DeleteMany(context.Background(), filter)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

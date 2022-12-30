@@ -15,6 +15,7 @@ type NoteStorage interface {
 	GetByTags(tags []string) (interface{}, error)
 	GetAll() (interface{}, error)
 	Delete(id string) error
+	DeleteByTags(tags []string) error
 }
 
 type NoteService struct {
@@ -74,14 +75,18 @@ func (s *NoteService) Get(id string) (interface{}, error) {
 	return s.store.Get(id)
 }
 
-func (s *NoteService) GetByTags(tags []string) (interface{}, error) {
-	return s.store.GetByTags(tags)
-}
-
 func (s *NoteService) GetAll() (interface{}, error) {
 	return s.store.GetAll()
 }
 
+func (s *NoteService) GetByTags(tags []string) (interface{}, error) {
+	return s.store.GetByTags(tags)
+}
+
 func (s *NoteService) Remove(id string) error {
 	return s.store.Delete(id)
+}
+
+func (s *NoteService) RemoveByTags(tags []string) error {
+	return s.store.DeleteByTags(tags)
 }

@@ -124,6 +124,19 @@ func (y *Yaml) Delete(id string) error {
 	return nil
 }
 
+func (y *Yaml) DeleteByTags(tags []string) error {
+	for i, note := range y.Notes {
+		for _, tag := range tags {
+			for _, noteTag := range note.Tags {
+				if noteTag == tag {
+					y.Notes = append(y.Notes[:i], y.Notes[i+1:]...)
+				}
+			}
+		}
+	}
+	return y.save()
+}
+
 func (y *Yaml) openFile() *os.File {
 	f, err := os.Open(y.File.Name())
 	if err != nil {
