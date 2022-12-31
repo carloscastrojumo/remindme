@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -152,23 +153,66 @@ func (y *Yaml) closeFile() error {
 
 func (y *Yaml) Search(searchWord string, searchLocations []string) (interface{}, error) {
 	var filteredNotes []Note
-	for _, note := range y.Notes {
-		if strings.Contains(note.Command, searchWord) || strings.Contains(note.Description, searchWord) {
-			filteredNotes = append(filteredNotes, note)
-		}
+	// for _, note := range y.Notes {
+	// 	if strings.Contains(note.Command, searchWord) || strings.Contains(note.Description, searchWord) {
+	// 		filteredNotes = append(filteredNotes, note)
+	// 	}
+	// }
+	notes, err := y.SearchInTags(searchWord)
+	if err != nil {
+		color.Red("Error while getting notes by tags: %s", err)
 	}
+	filteredNotes = append(filteredNotes, notes...)
+
+	notes, err = y.SearchInCommand(searchWord)
+	if err != nil {
+		color.Red("Error while getting notes by tags: %s", err)
+	}
+	filteredNotes = append(filteredNotes, notes...)
+
+	notes, err = y.SearchInDescription(searchWord)
+	if err != nil {
+		color.Red("Error while getting notes by tags: %s", err)
+	}
+	filteredNotes = append(filteredNotes, notes...)
 
 	return filteredNotes, nil
 }
 
-func (y *Yaml) SearchInTags(tags []string) error {
-	return nil
+func (y *Yaml) SearchInTags(searchWord string) ([]Note, error) {
+	var filteredNotes []Note
+	for _, note := range y.Notes {
+		for _, noteTag := range note.Tags {
+			if strings.Contains(noteTag, searchWord) {
+				filteredNotes = append(filteredNotes, note)
+			}
+		}
+	}
+	return filteredNotes, nil
 }
 
-func (y *Yaml) SearchInCommand(word string) error {
-	return nil
+func (y *Yaml) SearchInCommand(searchWord string) ([]Note, error) {
+	var filteredNotes []Note
+	for _, note := range y.Notes {
+		if strings.Contains(note.Command, searchWord) {
+			filteredNotes = append(filteredNotes, note)
+		}
+	}
+	return filteredNotes, nil
 }
 
-func (y *Yaml) SearchInDescription() error {
-	return nil
+func (y *Yaml) SearchInDescription(searchWord string) ([]Note, error) {
+	var filteredNotes []Note
+	for _, note := range y.Notes {
+		if strings.Contains(note.Description, searchWord) {
+			filteredNotes = append(filteredNotes, note)
+		}
+	}
+	return filteredNotes, nil
+}
+
+func (y *Yaml) AppendSearchResults(notes []Note, newNotes []Note) []Note {
+	var filteredNotes []Note
+	filteredNotes = notes
+	return filteredNotes
 }
