@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	yaml "gopkg.in/yaml.v3"
@@ -147,4 +148,27 @@ func (y *Yaml) openFile() *os.File {
 
 func (y *Yaml) closeFile() error {
 	return y.File.Close()
+}
+
+func (y *Yaml) Search(searchWord string, searchLocations []string) (interface{}, error) {
+	var filteredNotes []Note
+	for _, note := range y.Notes {
+		if strings.Contains(note.Command, searchWord) || strings.Contains(note.Description, searchWord) {
+			filteredNotes = append(filteredNotes, note)
+		}
+	}
+
+	return filteredNotes, nil
+}
+
+func (y *Yaml) SearchInTags(tags []string) error {
+	return nil
+}
+
+func (y *Yaml) SearchInCommand(word string) error {
+	return nil
+}
+
+func (y *Yaml) SearchInDescription() error {
+	return nil
 }

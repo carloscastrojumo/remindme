@@ -119,3 +119,7 @@ func (s *Store) DeleteByTags(tags []string) error {
 
 	return nil
 }
+
+func (s *Store) Search(searchWord string, searchLocations []string) (interface{}, error) {
+	return nil, nil
+}

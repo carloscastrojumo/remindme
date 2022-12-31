@@ -16,6 +16,7 @@ type NoteStorage interface {
 	GetAll() (interface{}, error)
 	Delete(id string) error
 	DeleteByTags(tags []string) error
+	Search(searchWord string, searchLocations []string) (interface{}, error)
 }
 
 type NoteService struct {
@@ -89,4 +90,8 @@ func (s *NoteService) Remove(id string) error {
 
 func (s *NoteService) RemoveByTags(tags []string) error {
 	return s.store.DeleteByTags(tags)
+}
+
+func (s *NoteService) Search(searchWord string, searchLocations []string) (interface{}, error) {
+	return s.store.Search(searchWord, searchLocations)
 }
