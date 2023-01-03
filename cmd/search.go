@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/carloscastrojumo/remindme/pkg/output"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var searchCmd = &cobra.Command{
@@ -13,9 +12,17 @@ var searchCmd = &cobra.Command{
 	Short: "Search the notes in the database",
 	Long:  `Search the notes in the database, by default it searches in tags, commands, and descriptions. If a flag is specified it will only search in those.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(args)
-		fmt.Println(cmd.Flags().Changed("tags"))
-		notes, err := noteService.Search(args[0], nil)
+		var searchLocations []string
+
+		cmd.Flags().Visit(func(f *pflag.Flag) {
+			searchLocations = append(searchLocations, f.Name)
+		})
+
+		if len(searchLocations) == 0 {
+			searchLocations = append(searchLocations, "command", "description", "tags")
+		}
+
+		notes, err := noteService.Search(args[0], searchLocations)
 		if err != nil {
 			color.Red("Error while getting notes by tags: %s", err)
 		}

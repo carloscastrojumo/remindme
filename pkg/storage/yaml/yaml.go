@@ -153,29 +153,25 @@ func (y *Yaml) closeFile() error {
 
 func (y *Yaml) Search(searchWord string, searchLocations []string) (interface{}, error) {
 	var filteredNotes []Note
-	// for _, note := range y.Notes {
-	// 	if strings.Contains(note.Command, searchWord) || strings.Contains(note.Description, searchWord) {
-	// 		filteredNotes = append(filteredNotes, note)
-	// 	}
-	// }
-	notes, err := y.SearchInTags(searchWord)
-	if err != nil {
-		color.Red("Error while getting notes by tags: %s", err)
-	}
-	filteredNotes = append(filteredNotes, notes...)
+	var notes []Note
+	var err error
 
-	notes, err = y.SearchInCommand(searchWord)
-	if err != nil {
-		color.Red("Error while getting notes by tags: %s", err)
-	}
-	filteredNotes = append(filteredNotes, notes...)
+	for _, searchLocation := range searchLocations {
+		switch searchLocation {
+		case "command":
+			notes, err = y.SearchInCommand(searchWord)
+		case "description":
+			notes, err = y.SearchInDescription(searchWord)
+		case "tags":
+			notes, err = y.SearchInTags(searchWord)
+		}
 
-	notes, err = y.SearchInDescription(searchWord)
-	if err != nil {
-		color.Red("Error while getting notes by tags: %s", err)
-	}
-	filteredNotes = append(filteredNotes, notes...)
+		if err != nil {
+			color.Red("Error while getting notes by tags: %s", err)
+		}
 
+		filteredNotes = y.AppendSearchResults(filteredNotes, notes)
+	}
 	return filteredNotes, nil
 }
 
@@ -214,5 +210,20 @@ func (y *Yaml) SearchInDescription(searchWord string) ([]Note, error) {
 func (y *Yaml) AppendSearchResults(notes []Note, newNotes []Note) []Note {
 	var filteredNotes []Note
 	filteredNotes = notes
+
+	for _, newNote := range newNotes {
+		if !(ResultContainsId(filteredNotes, newNote.Id)) {
+			filteredNotes = append(filteredNotes, newNote)
+		}
+	}
 	return filteredNotes
+}
+
+func ResultContainsId(notes []Note, searchId string) bool {
+	for _, item := range notes {
+		if item.Id == searchId {
+			return true
+		}
+	}
+	return false
 }
