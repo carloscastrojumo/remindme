@@ -11,7 +11,7 @@ import (
 )
 
 type Note struct {
-	Id          primitive.ObjectID `bson:"_id"`
+	Id          primitive.ObjectID `bson:"_id,omitempty"`
 	Tags        []string           `bson:"tags"`
 	Command     string             `bson:"command"`
 	Description string             `bson:"description"`
