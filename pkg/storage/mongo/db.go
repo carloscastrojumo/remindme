@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -121,5 +122,39 @@ func (s *Store) DeleteByTags(tags []string) error {
 }
 
 func (s *Store) Search(searchWord string, searchLocations []string) (interface{}, error) {
-	return nil, nil
+	fmt.Println("Searching: ", searchWord)
+	fmt.Println("In: ", searchLocations)
+
+	notes := make(map[string]Note)
+	filterLocs := []bson.M{}
+	for _, searchLocation := range searchLocations {
+		switch searchLocation {
+		case "command":
+			filterLocs = append(filterLocs, bson.M{"command": primitive.Regex{Pattern: searchWord, Options: ""}})
+		case "description":
+			filterLocs = append(filterLocs, bson.M{"description": primitive.Regex{Pattern: searchWord, Options: ""}})
+		case "tags":
+			filterLocs = append(filterLocs, bson.M{"tags": primitive.Regex{Pattern: searchWord, Options: ""}})
+		}
+	}
+
+	filter := bson.M{"$or": filterLocs}
+	cur, err := s.db.Collection("notes").Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	for cur.Next(context.Background()) {
+		var n Note
+		if err := cur.Decode(&n); err != nil {
+			return nil, err
+		}
+		notes[n.Id.String()] = n
+	}
+
+	var result []Note
+	for _, v := range notes {
+		result = append(result, v)
+	}
+
+	return result, nil
 }
