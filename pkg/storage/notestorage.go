@@ -2,8 +2,6 @@ package storage
 
 import (
 	"errors"
-	"fmt"
-	"reflect"
 	"strings"
 
 	mongo "github.com/carloscastrojumo/remindme/pkg/storage/mongo"
@@ -56,7 +54,6 @@ func NewNoteService(store NoteStorage) *NoteService {
 }
 
 func (s *NoteService) Add(note interface{}) error {
-	fmt.Println("Adding note", reflect.TypeOf(s))
 	switch storageType {
 	case "yaml":
 		return s.store.Insert(yaml.Note{
