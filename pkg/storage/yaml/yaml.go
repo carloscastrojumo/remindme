@@ -6,8 +6,10 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -147,4 +149,81 @@ func (y *Yaml) openFile() *os.File {
 
 func (y *Yaml) closeFile() error {
 	return y.File.Close()
+}
+
+func (y *Yaml) Search(searchWord string, searchLocations []string) (interface{}, error) {
+	var filteredNotes []Note
+	var notes []Note
+	var err error
+
+	for _, searchLocation := range searchLocations {
+		switch searchLocation {
+		case "command":
+			notes, err = y.SearchInCommand(searchWord)
+		case "description":
+			notes, err = y.SearchInDescription(searchWord)
+		case "tags":
+			notes, err = y.SearchInTags(searchWord)
+		}
+
+		if err != nil {
+			color.Red("Error while getting notes by tags: %s", err)
+		}
+
+		filteredNotes = y.AppendSearchResults(filteredNotes, notes)
+	}
+	return filteredNotes, nil
+}
+
+func (y *Yaml) SearchInTags(searchWord string) ([]Note, error) {
+	var filteredNotes []Note
+	for _, note := range y.Notes {
+		for _, noteTag := range note.Tags {
+			if strings.Contains(noteTag, searchWord) {
+				filteredNotes = append(filteredNotes, note)
+			}
+		}
+	}
+	return filteredNotes, nil
+}
+
+func (y *Yaml) SearchInCommand(searchWord string) ([]Note, error) {
+	var filteredNotes []Note
+	for _, note := range y.Notes {
+		if strings.Contains(note.Command, searchWord) {
+			filteredNotes = append(filteredNotes, note)
+		}
+	}
+	return filteredNotes, nil
+}
+
+func (y *Yaml) SearchInDescription(searchWord string) ([]Note, error) {
+	var filteredNotes []Note
+	for _, note := range y.Notes {
+		if strings.Contains(note.Description, searchWord) {
+			filteredNotes = append(filteredNotes, note)
+		}
+	}
+	return filteredNotes, nil
+}
+
+func (y *Yaml) AppendSearchResults(notes []Note, newNotes []Note) []Note {
+	var filteredNotes []Note
+	filteredNotes = notes
+
+	for _, newNote := range newNotes {
+		if !(ResultContainsId(filteredNotes, newNote.Id)) {
+			filteredNotes = append(filteredNotes, newNote)
+		}
+	}
+	return filteredNotes
+}
+
+func ResultContainsId(notes []Note, searchId string) bool {
+	for _, item := range notes {
+		if item.Id == searchId {
+			return true
+		}
+	}
+	return false
 }

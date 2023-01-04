@@ -2,9 +2,11 @@ package storage
 
 import (
 	"errors"
+	"strings"
 
 	mongo "github.com/carloscastrojumo/remindme/pkg/storage/mongo"
 	yaml "github.com/carloscastrojumo/remindme/pkg/storage/yaml"
+	"github.com/fatih/color"
 )
 
 type NoteStorage interface {
@@ -14,6 +16,7 @@ type NoteStorage interface {
 	GetAll() (interface{}, error)
 	Delete(id string) error
 	DeleteByTags(tags []string) error
+	Search(searchWord string, searchLocations []string) (interface{}, error)
 }
 
 type NoteService struct {
@@ -86,4 +89,10 @@ func (s *NoteService) Remove(id string) error {
 
 func (s *NoteService) RemoveByTags(tags []string) error {
 	return s.store.DeleteByTags(tags)
+}
+
+func (s *NoteService) Search(searchWord string, searchLocations []string) (interface{}, error) {
+	color.Blue("Searching: %s\n", color.GreenString(searchWord))
+	color.Blue("In: %s\n", color.GreenString(strings.Join(searchLocations, " ")))
+	return s.store.Search(searchWord, searchLocations)
 }
