@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/carloscastrojumo/remindme/pkg/output"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -11,7 +13,7 @@ var searchCmd = &cobra.Command{
 	Use:   "search [word-to-search] [flags]",
 	Short: "Search the notes in the database",
 	Long:  `Search the notes in the database, by default it searches in tags, commands, and descriptions. If a flag is specified it will only search in those.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		var searchLocations []string
 
 		cmd.Flags().Visit(func(f *pflag.Flag) {
@@ -22,11 +24,17 @@ var searchCmd = &cobra.Command{
 			searchLocations = append(searchLocations, "command", "description", "tags")
 		}
 
+		if len(args) < 1 {
+			return errors.New("the word-to-search argument is required")
+		}
+
 		notes, err := noteService.Search(args[0], searchLocations)
 		if err != nil {
 			color.Red("Error while getting notes by tags: %s", err)
 		}
 		output.Print(notes)
+
+		return nil
 	},
 }
 
