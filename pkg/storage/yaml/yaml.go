@@ -2,6 +2,7 @@ package yaml
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -152,6 +153,8 @@ func (y *Yaml) closeFile() error {
 }
 
 func (y *Yaml) Search(searchWord string, searchLocations []string) (interface{}, error) {
+	fmt.Println("Searching: ", searchWord)
+	fmt.Println("In: ", searchLocations)
 	var filteredNotes []Note
 	var notes []Note
 	var err error
