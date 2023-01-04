@@ -2,7 +2,6 @@ package mongo
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -122,9 +121,6 @@ func (s *Store) DeleteByTags(tags []string) error {
 }
 
 func (s *Store) Search(searchWord string, searchLocations []string) (interface{}, error) {
-	fmt.Println("Searching: ", searchWord)
-	fmt.Println("In: ", searchLocations)
-
 	notes := make(map[string]Note)
 	filterLocs := []bson.M{}
 	for _, searchLocation := range searchLocations {
