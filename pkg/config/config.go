@@ -5,11 +5,11 @@ import (
 	"os"
 
 	"github.com/adrg/xdg"
+	prompt "github.com/carloscastrojumo/remindme/pkg/prompt"
 	"github.com/carloscastrojumo/remindme/pkg/storage"
 	"github.com/carloscastrojumo/remindme/pkg/storage/mongo"
 	"github.com/carloscastrojumo/remindme/pkg/storage/yaml"
 	"github.com/fatih/color"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/viper"
 )
 
@@ -40,36 +40,21 @@ func InitConfig() {
 }
 
 func promptConfigFile() {
-	storageType := promptForString("What storage type do you want to use? (mongo, yaml)")
+	storageType := prompt.PromptForString("What storage type do you want to use? (mongo, yaml)")
 
 	viper.Set("storageType", storageType)
 
 	switch storageType {
 	case "mongo":
-		viper.Set("mongo.host", promptForString("Mongo host"))
-		viper.Set("mongo.port", promptForString("Mongo port"))
-		viper.Set("mongo.database", promptForString("Mongo database"))
-		viper.Set("mongo.collection", promptForString("Mongo collection"))
+		viper.Set("mongo.host", prompt.PromptForString("Mongo host"))
+		viper.Set("mongo.port", prompt.PromptForString("Mongo port"))
+		viper.Set("mongo.database", prompt.PromptForString("Mongo database"))
+		viper.Set("mongo.collection", prompt.PromptForString("Mongo collection"))
 	case "yaml":
-		viper.Set("yaml.name", promptForString("YAML file name"))
+		viper.Set("yaml.name", prompt.PromptForString("YAML file name"))
 	}
 
 	saveConfigFile()
-}
-
-func promptForString(label string) string {
-	prompt := promptui.Prompt{
-		Label: label,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return ""
-	}
-
-	return result
 }
 
 func saveConfigFile() {
