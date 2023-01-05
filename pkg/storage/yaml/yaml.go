@@ -78,11 +78,11 @@ func (y *Yaml) Insert(note interface{}) error {
 func (y *Yaml) save() error {
 	data, err := yaml.Marshal(y.Notes)
 	if err != nil {
-		return errors.New("Error while marshalling notes")
+		return errors.New("error while marshalling notes")
 	}
 
 	if err := os.WriteFile(y.File.Name(), data, 0644); err != nil {
-		return errors.New("Error while writing notes to file")
+		return errors.New("error while writing notes to file")
 	}
 	return nil
 }
@@ -137,18 +137,6 @@ func (y *Yaml) DeleteByTags(tags []string) error {
 		}
 	}
 	return y.save()
-}
-
-func (y *Yaml) openFile() *os.File {
-	f, err := os.Open(y.File.Name())
-	if err != nil {
-		log.Fatal(err)
-	}
-	return f
-}
-
-func (y *Yaml) closeFile() error {
-	return y.File.Close()
 }
 
 func (y *Yaml) Search(searchWord string, searchLocations []string) (interface{}, error) {

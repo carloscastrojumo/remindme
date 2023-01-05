@@ -68,7 +68,7 @@ func (s *NoteService) Add(note interface{}) error {
 			Description: note.(Note).Description,
 		})
 	}
-	return errors.New("Storage type not supported")
+	return errors.New("storage type not supported")
 }
 
 func (s *NoteService) Get(id string) (interface{}, error) {
