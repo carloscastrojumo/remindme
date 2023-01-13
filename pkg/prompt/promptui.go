@@ -23,8 +23,8 @@ func ForString(label string) string {
 	return result
 }
 
-// PromptForStringWithDefault prompts the user for a string with a default value
-func PromptForStringArray(label string) []string {
+// ForStringArray prompts the user for a string array
+func ForStringArray(label string) []string {
 	prompt := promptui.Prompt{
 		Label: label,
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 )
 
+// Note note struct
 type Note struct {
 	ID          string   `json:"id"`
 	Tags        []string `json:"tags"`

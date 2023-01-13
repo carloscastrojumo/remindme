@@ -9,6 +9,7 @@ import (
 	"github.com/fatih/color"
 )
 
+// NoteStorage is the interface that wraps the basic storage methods.
 type NoteStorage interface {
 	Insert(item interface{}) error
 	Get(id string) (interface{}, error)
@@ -19,17 +20,20 @@ type NoteStorage interface {
 	Search(searchWord string, searchLocations []string) (interface{}, error)
 }
 
+// NoteService is the service that handles the storage
 type NoteService struct {
 	store NoteStorage
 }
 
+// StorageConfig is the configuration for the storage
 type StorageConfig struct {
 	StorageType   string
 	StorageConfig interface{}
 }
 
+// Note is the struct that represents a note
 type Note struct {
-	Id          string
+	ID          string
 	Tags        []string
 	Command     string
 	Description string
@@ -37,6 +41,7 @@ type Note struct {
 
 var storageType string
 
+// GetStorage returns the storage type
 func GetStorage(config *StorageConfig) NoteStorage {
 	switch config.StorageType {
 	case "yaml":
@@ -49,6 +54,7 @@ func GetStorage(config *StorageConfig) NoteStorage {
 	return nil
 }
 
+// NewNoteService returns a new note service
 func NewNoteService(store NoteStorage) *NoteService {
 	return &NoteService{store: store}
 }
