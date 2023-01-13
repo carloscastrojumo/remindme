@@ -22,6 +22,7 @@ One can use stringer to modify or inspect strings straight from the terminal`,
 	},
 }
 
+// Execute adds all child commands to the root command and sets flags appropriately.
 func Execute() {
 	config.InitConfig()
 	noteService = config.GetNoteService()

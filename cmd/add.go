@@ -37,8 +37,8 @@ var addCmd = &cobra.Command{
 
 func promptNote() storage.Note {
 	note := storage.Note{}
-	note.Command = prompt.PromptForString("Command")
-	note.Description = prompt.PromptForString("Description")
-	note.Tags = prompt.PromptForStringArray("Tags")
+	note.Command = prompt.ForString("Command")
+	note.Description = prompt.ForString("Description")
+	note.Tags = prompt.ForStringArray("Tags")
 	return note
 }

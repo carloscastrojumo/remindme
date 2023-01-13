@@ -13,22 +13,26 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
+// Note is a struct that represents a note in YAML storage
 type Note struct {
-	Id          string   `yaml:"id"`
+	ID          string   `yaml:"id"`
 	Tags        []string `yaml:"tags"`
 	Command     string   `yaml:"command"`
 	Description string   `yaml:"description"`
 }
 
+// Yaml is a struct that represents YAML storage
 type Yaml struct {
 	File  *os.File
 	Notes []Note
 }
 
+// Config is a struct that represents YAML storage config
 type Config struct {
 	Name string
 }
 
+// Initialize the YAML storage
 func Initialize(config *Config) *Yaml {
 	// check if file exists, if not create it
 	f, err := os.OpenFile(config.Name, os.O_RDWR|os.O_CREATE, 0644)
@@ -51,6 +55,7 @@ func Initialize(config *Config) *Yaml {
 	return &Yaml{File: f, Notes: notes}
 }
 
+// Insert inserts a new note to YAML storage
 func (y *Yaml) Insert(note interface{}) error {
 	newNote := note.(Note)
 
@@ -67,7 +72,7 @@ func (y *Yaml) Insert(note interface{}) error {
 	// if it doesn't, create new one
 	// generate new id
 	rand.Seed(time.Now().UnixNano())
-	newNote.Id = strconv.Itoa(rand.Intn(1000000))
+	newNote.ID = strconv.Itoa(rand.Intn(1000000))
 
 	// append new note to notes
 	y.Notes = append(y.Notes, newNote)
@@ -87,9 +92,10 @@ func (y *Yaml) save() error {
 	return nil
 }
 
+// Get returns a note by id
 func (y *Yaml) Get(id string) (interface{}, error) {
 	for _, note := range y.Notes {
-		if note.Id == id {
+		if note.ID == id {
 			return note, nil
 		}
 	}
@@ -97,6 +103,7 @@ func (y *Yaml) Get(id string) (interface{}, error) {
 	return nil, nil
 }
 
+// GetByTags returns notes by tags
 func (y *Yaml) GetByTags(tags []string) (interface{}, error) {
 	var filteredNotes []Note
 	for _, note := range y.Notes {
@@ -112,13 +119,15 @@ func (y *Yaml) GetByTags(tags []string) (interface{}, error) {
 	return filteredNotes, nil
 }
 
+// GetAll returns all notes
 func (y *Yaml) GetAll() (interface{}, error) {
 	return y.Notes, nil
 }
 
+// Delete deletes a note by id
 func (y *Yaml) Delete(id string) error {
 	for i, note := range y.Notes {
-		if note.Id == id {
+		if note.ID == id {
 			y.Notes = append(y.Notes[:i], y.Notes[i+1:]...)
 			return y.save()
 		}
@@ -126,6 +135,7 @@ func (y *Yaml) Delete(id string) error {
 	return nil
 }
 
+// DeleteByTags deletes notes by tags
 func (y *Yaml) DeleteByTags(tags []string) error {
 	for i, note := range y.Notes {
 		for _, tag := range tags {
@@ -139,6 +149,7 @@ func (y *Yaml) DeleteByTags(tags []string) error {
 	return y.save()
 }
 
+// Search returns notes by search word
 func (y *Yaml) Search(searchWord string, searchLocations []string) (interface{}, error) {
 	var filteredNotes []Note
 	var notes []Note
@@ -158,11 +169,12 @@ func (y *Yaml) Search(searchWord string, searchLocations []string) (interface{},
 			color.Red("Error while getting notes by tags: %s", err)
 		}
 
-		filteredNotes = y.AppendSearchResults(filteredNotes, notes)
+		filteredNotes = y.appendSearchResults(filteredNotes, notes)
 	}
 	return filteredNotes, nil
 }
 
+// SearchInTags returns notes by search word in tags
 func (y *Yaml) SearchInTags(searchWord string) ([]Note, error) {
 	var filteredNotes []Note
 	for _, note := range y.Notes {
@@ -175,6 +187,7 @@ func (y *Yaml) SearchInTags(searchWord string) ([]Note, error) {
 	return filteredNotes, nil
 }
 
+// SearchInCommand returns notes by search word in command
 func (y *Yaml) SearchInCommand(searchWord string) ([]Note, error) {
 	var filteredNotes []Note
 	for _, note := range y.Notes {
@@ -185,6 +198,7 @@ func (y *Yaml) SearchInCommand(searchWord string) ([]Note, error) {
 	return filteredNotes, nil
 }
 
+// SearchInDescription returns notes by search word in description
 func (y *Yaml) SearchInDescription(searchWord string) ([]Note, error) {
 	var filteredNotes []Note
 	for _, note := range y.Notes {
@@ -195,21 +209,21 @@ func (y *Yaml) SearchInDescription(searchWord string) ([]Note, error) {
 	return filteredNotes, nil
 }
 
-func (y *Yaml) AppendSearchResults(notes []Note, newNotes []Note) []Note {
+func (y *Yaml) appendSearchResults(notes []Note, newNotes []Note) []Note {
 	var filteredNotes []Note
 	filteredNotes = notes
 
 	for _, newNote := range newNotes {
-		if !(ResultContainsId(filteredNotes, newNote.Id)) {
+		if !(resultContainsID(filteredNotes, newNote.ID)) {
 			filteredNotes = append(filteredNotes, newNote)
 		}
 	}
 	return filteredNotes
 }
 
-func ResultContainsId(notes []Note, searchId string) bool {
+func resultContainsID(notes []Note, searchID string) bool {
 	for _, item := range notes {
-		if item.Id == searchId {
+		if item.ID == searchID {
 			return true
 		}
 	}
