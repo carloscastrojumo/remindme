@@ -41,18 +41,18 @@ func InitConfig() {
 }
 
 func promptConfigFile() {
-	storageType := prompt.PromptForString("What storage type do you want to use? (mongo, yaml)")
+	storageType := prompt.ForString("What storage type do you want to use? (mongo, yaml)")
 
 	viper.Set("storageType", storageType)
 
 	switch storageType {
 	case "mongo":
-		viper.Set("mongo.host", prompt.PromptForString("Mongo host"))
-		viper.Set("mongo.port", prompt.PromptForString("Mongo port"))
-		viper.Set("mongo.database", prompt.PromptForString("Mongo database"))
-		viper.Set("mongo.collection", prompt.PromptForString("Mongo collection"))
+		viper.Set("mongo.host", prompt.ForString("Mongo host"))
+		viper.Set("mongo.port", prompt.ForString("Mongo port"))
+		viper.Set("mongo.database", prompt.ForString("Mongo database"))
+		viper.Set("mongo.collection", prompt.ForString("Mongo collection"))
 	case "yaml":
-		viper.Set("yaml.name", prompt.PromptForString("YAML file name"))
+		viper.Set("yaml.name", prompt.ForString("YAML file name"))
 	}
 
 	saveConfigFile()
