@@ -13,16 +13,16 @@ import (
 	"github.com/spf13/viper"
 )
 
+var appDir = xdg.Home + "/.config/remindme"
+
 // InitConfig initializes the configuration
 func InitConfig() {
-	configDir := xdg.Home + "/.config/remindme"
-
-	viper.AddConfigPath(configDir)
+	viper.AddConfigPath(appDir)
 	viper.SetConfigName("config")
 
 	// create new folder if it doesn't exist
-	if _, err := os.Stat(configDir); os.IsNotExist(err) {
-		if os.Mkdir(configDir, 0755) != nil {
+	if _, err := os.Stat(appDir); os.IsNotExist(err) {
+		if os.Mkdir(appDir, 0755) != nil {
 			color.Red("Error while creating config folder: %s", err)
 		}
 	}
@@ -52,11 +52,8 @@ func promptConfigFile() {
 		viper.Set("mongo.database", prompt.ForString("Mongo database"))
 		viper.Set("mongo.collection", prompt.ForString("Mongo collection"))
 	case "yaml":
-		dataDir := xdg.Home + "/.config/remindme"
-		dataFilename := prompt.PromptForString("YAML file name (current directory: " + dataDir + ")")
-		viper.Set("yaml.name", dataDir + "/" + dataFilename)
-		
-		viper.Set("yaml.name", prompt.ForString("YAML file name"))
+		dataFilename := prompt.ForString("YAML file name (current directory: " + appDir + ")")
+		viper.Set("yaml.name", appDir + "/" + dataFilename)
 	}
 
 	saveConfigFile()
