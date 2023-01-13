@@ -79,7 +79,7 @@ func GetNoteService() *storage.NoteService {
 			os.Exit(1)
 		}
 
-		storageConfig := &storage.StorageConfig{
+		storageConfig := &storage.Config{
 			StorageType:   "mongo",
 			StorageConfig: &mongoConfig,
 		}
@@ -95,7 +95,7 @@ func GetNoteService() *storage.NoteService {
 			os.Exit(1)
 		}
 
-		storageConfig := &storage.StorageConfig{
+		storageConfig := &storage.Config{
 			StorageType:   "yaml",
 			StorageConfig: &yamlConfig,
 		}
@@ -109,7 +109,7 @@ func GetNoteService() *storage.NoteService {
 	return nil
 }
 
-func initNoteService(storageConfig *storage.StorageConfig) *storage.NoteService {
+func initNoteService(storageConfig *storage.Config) *storage.NoteService {
 	storeService := storage.GetStorage(storageConfig)
 	return storage.NewNoteService(storeService)
 }

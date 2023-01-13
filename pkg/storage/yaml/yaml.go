@@ -32,7 +32,7 @@ type Config struct {
 	Name string
 }
 
-// Init initializes YAML storage
+// Initialize the YAML storage
 func Initialize(config *Config) *Yaml {
 	// check if file exists, if not create it
 	f, err := os.OpenFile(config.Name, os.O_RDWR|os.O_CREATE, 0644)
@@ -214,16 +214,16 @@ func (y *Yaml) appendSearchResults(notes []Note, newNotes []Note) []Note {
 	filteredNotes = notes
 
 	for _, newNote := range newNotes {
-		if !(resultContainsId(filteredNotes, newNote.ID)) {
+		if !(resultContainsID(filteredNotes, newNote.ID)) {
 			filteredNotes = append(filteredNotes, newNote)
 		}
 	}
 	return filteredNotes
 }
 
-func resultContainsId(notes []Note, searchId string) bool {
+func resultContainsID(notes []Note, searchID string) bool {
 	for _, item := range notes {
-		if item.ID == searchId {
+		if item.ID == searchID {
 			return true
 		}
 	}

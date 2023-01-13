@@ -25,8 +25,8 @@ type NoteService struct {
 	store NoteStorage
 }
 
-// StorageConfig is the configuration for the storage
-type StorageConfig struct {
+// Config is the configuration for the storage
+type Config struct {
 	StorageType   string
 	StorageConfig interface{}
 }
@@ -42,7 +42,7 @@ type Note struct {
 var storageType string
 
 // GetStorage returns the storage type
-func GetStorage(config *StorageConfig) NoteStorage {
+func GetStorage(config *Config) NoteStorage {
 	switch config.StorageType {
 	case "yaml":
 		storageType = "yaml"
