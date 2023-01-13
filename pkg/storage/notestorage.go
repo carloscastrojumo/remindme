@@ -59,6 +59,7 @@ func NewNoteService(store NoteStorage) *NoteService {
 	return &NoteService{store: store}
 }
 
+// Add adds a new note
 func (s *NoteService) Add(note interface{}) error {
 	switch storageType {
 	case "yaml":
@@ -77,26 +78,32 @@ func (s *NoteService) Add(note interface{}) error {
 	return errors.New("storage type not supported")
 }
 
+// Get returns a note by id
 func (s *NoteService) Get(id string) (interface{}, error) {
 	return s.store.Get(id)
 }
 
+// GetAll returns all the notes
 func (s *NoteService) GetAll() (interface{}, error) {
 	return s.store.GetAll()
 }
 
+// GetByTags returns all the notes that match the tags
 func (s *NoteService) GetByTags(tags []string) (interface{}, error) {
 	return s.store.GetByTags(tags)
 }
 
+// Remove removes a note by id
 func (s *NoteService) Remove(id string) error {
 	return s.store.Delete(id)
 }
 
+// RemoveByTags removes all the notes that match the tags
 func (s *NoteService) RemoveByTags(tags []string) error {
 	return s.store.DeleteByTags(tags)
 }
 
+// Search returns all the notes that match the search word
 func (s *NoteService) Search(searchWord string, searchLocations []string) (interface{}, error) {
 	color.Blue("Searching: %s\n", color.GreenString(searchWord))
 	color.Blue("In: %s\n", color.GreenString(strings.Join(searchLocations, " ")))
