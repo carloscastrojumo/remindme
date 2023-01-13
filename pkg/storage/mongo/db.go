@@ -10,13 +10,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// Note struct for storing notes in MongoDB
 type Note struct {
-	Id          primitive.ObjectID `bson:"_id,omitempty"`
+	ID          primitive.ObjectID `bson:"_id,omitempty"`
 	Tags        []string           `bson:"tags"`
 	Command     string             `bson:"command"`
 	Description string             `bson:"description"`
 }
 
+// Config struct for storing MongoDB client
 type Config struct {
 	Host       string
 	Port       int
@@ -24,10 +26,12 @@ type Config struct {
 	Collection string
 }
 
+// Store struct for storing MongoDB client
 type Store struct {
 	db *mongo.Database
 }
 
+// Initialize MongoDB client
 func Initialize(config *Config) *Store {
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
@@ -36,11 +40,13 @@ func Initialize(config *Config) *Store {
 	return &Store{db: client.Database("notes")}
 }
 
+// Insert a note into MongoDB
 func (s *Store) Insert(item interface{}) error {
 	_, err := s.db.Collection("notes").InsertOne(context.Background(), item)
 	return err
 }
 
+// Get a note from MongoDB
 func (s *Store) Get(id string) (interface{}, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -50,6 +56,7 @@ func (s *Store) Get(id string) (interface{}, error) {
 	return s.db.Collection("notes").FindOne(context.Background(), filter).DecodeBytes()
 }
 
+// GetByTags gets notes by tags from MongoDB
 func (s *Store) GetByTags(tags []string) (interface{}, error) {
 	notes := make(map[string]Note)
 	for _, tag := range tags {
@@ -63,7 +70,7 @@ func (s *Store) GetByTags(tags []string) (interface{}, error) {
 			if err := cur.Decode(&n); err != nil {
 				return nil, err
 			}
-			notes[n.Id.String()] = n
+			notes[n.ID.String()] = n
 		}
 	}
 
@@ -75,6 +82,7 @@ func (s *Store) GetByTags(tags []string) (interface{}, error) {
 	return result, nil
 }
 
+// GetAll gets all notes from MongoDB
 func (s *Store) GetAll() (interface{}, error) {
 	notes := make(map[string]Note)
 	filter := bson.M{}
@@ -87,7 +95,7 @@ func (s *Store) GetAll() (interface{}, error) {
 		if err := cur.Decode(&n); err != nil {
 			return nil, err
 		}
-		notes[n.Id.String()] = n
+		notes[n.ID.String()] = n
 	}
 
 	var result []Note
@@ -98,6 +106,7 @@ func (s *Store) GetAll() (interface{}, error) {
 	return result, nil
 }
 
+// Delete a note by ID from MongoDB
 func (s *Store) Delete(id string) error {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -108,6 +117,7 @@ func (s *Store) Delete(id string) error {
 	return err
 }
 
+// DeleteByTags deletes notes by tags from MongoDB
 func (s *Store) DeleteByTags(tags []string) error {
 	for _, tag := range tags {
 		filter := bson.M{"tags": bson.M{"$in": []string{tag}}}
@@ -120,6 +130,7 @@ func (s *Store) DeleteByTags(tags []string) error {
 	return nil
 }
 
+// Search for notes by tags, description or command from MongoDB
 func (s *Store) Search(searchWord string, searchLocations []string) (interface{}, error) {
 	notes := make(map[string]Note)
 	filterLocs := []bson.M{}
@@ -144,7 +155,7 @@ func (s *Store) Search(searchWord string, searchLocations []string) (interface{}
 		if err := cur.Decode(&n); err != nil {
 			return nil, err
 		}
-		notes[n.Id.String()] = n
+		notes[n.ID.String()] = n
 	}
 
 	var result []Note

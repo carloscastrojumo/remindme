@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// InitConfig initializes the configuration
 func InitConfig() {
 	configDir := xdg.Home + "/.config/remindme"
 
@@ -40,21 +41,22 @@ func InitConfig() {
 }
 
 func promptConfigFile() {
-	storageType := prompt.PromptForString("What storage type do you want to use? (mongo, yaml)")
+	storageType := prompt.ForString("What storage type do you want to use? (mongo, yaml)")
 
 	viper.Set("storageType", storageType)
 
 	switch storageType {
 	case "mongo":
-		viper.Set("mongo.host", prompt.PromptForString("Mongo host"))
-		viper.Set("mongo.port", prompt.PromptForString("Mongo port"))
-		viper.Set("mongo.database", prompt.PromptForString("Mongo database"))
-		viper.Set("mongo.collection", prompt.PromptForString("Mongo collection"))
+		viper.Set("mongo.host", prompt.ForString("Mongo host"))
+		viper.Set("mongo.port", prompt.ForString("Mongo port"))
+		viper.Set("mongo.database", prompt.ForString("Mongo database"))
+		viper.Set("mongo.collection", prompt.ForString("Mongo collection"))
 	case "yaml":
 		dataDir := xdg.Home + "/.config/remindme"
 		dataFilename := prompt.PromptForString("YAML file name (current directory: " + dataDir + ")")
 		viper.Set("yaml.name", dataDir + "/" + dataFilename)
 		
+		viper.Set("yaml.name", prompt.ForString("YAML file name"))
 	}
 
 	saveConfigFile()
@@ -66,6 +68,7 @@ func saveConfigFile() {
 	viper.WriteConfigAs(configDir + "/config.yaml")
 }
 
+// GetNoteService returns a new note service
 func GetNoteService() *storage.NoteService {
 	storageType := viper.GetString("storageType")
 
@@ -80,7 +83,7 @@ func GetNoteService() *storage.NoteService {
 			os.Exit(1)
 		}
 
-		storageConfig := &storage.StorageConfig{
+		storageConfig := &storage.Config{
 			StorageType:   "mongo",
 			StorageConfig: &mongoConfig,
 		}
@@ -96,7 +99,7 @@ func GetNoteService() *storage.NoteService {
 			os.Exit(1)
 		}
 
-		storageConfig := &storage.StorageConfig{
+		storageConfig := &storage.Config{
 			StorageType:   "yaml",
 			StorageConfig: &yamlConfig,
 		}
@@ -110,7 +113,7 @@ func GetNoteService() *storage.NoteService {
 	return nil
 }
 
-func initNoteService(storageConfig *storage.StorageConfig) *storage.NoteService {
+func initNoteService(storageConfig *storage.Config) *storage.NoteService {
 	storeService := storage.GetStorage(storageConfig)
 	return storage.NewNoteService(storeService)
 }
