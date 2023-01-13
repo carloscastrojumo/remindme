@@ -3,3 +3,24 @@
     - foo
   command: foo
   description: Just an example
+- id: "903250"
+  tags:
+    - bar
+  command: ls -la
+  description: test prompt
+- id: "780318"
+  tags:
+    - foo bar
+  command: cd cenas
+  description: 'another test '
+- id: "275917"
+  tags:
+    - xargs
+  command: xargs -I {}
+  description: Another exampleeeee
+- id: "172168"
+  tags:
+    - foo
+    - bar
+  command: ls
+  description: ls

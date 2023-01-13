@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// InitConfig initializes the configuration
 func InitConfig() {
 	configDir := xdg.Home + "/.config/remindme"
 
@@ -63,6 +64,7 @@ func saveConfigFile() {
 	viper.WriteConfigAs(configDir + "/config.yaml")
 }
 
+// GetNoteService returns a new note service
 func GetNoteService() *storage.NoteService {
 	storageType := viper.GetString("storageType")
 

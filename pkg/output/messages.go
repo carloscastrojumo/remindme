@@ -15,6 +15,7 @@ type Note struct {
 	Description string   `json:"description"`
 }
 
+// Print print the notes
 func Print(note interface{}) {
 	notes := []Note{}
 	s, _ := json.MarshalIndent(note, "", "\t")
@@ -28,6 +29,7 @@ func Print(note interface{}) {
 	}
 
 	orderedNotes := orderNotes(notes)
+	fmt.Println(orderedNotes)
 	maxLength := getMaxLength(notes)
 
 	numberOfTags := len(orderedNotes)
@@ -39,13 +41,13 @@ func Print(note interface{}) {
 		} else {
 			size = size - (len(tag)-maxLength)/2
 		}
-		right_size := size
+		rightSize := size
 		if size%2 != 0 {
-			right_size = size + 1
+			rightSize = size + 1
 		}
-		left_pad := strings.Repeat("-", size)
-		right_pad := strings.Repeat("-", right_size)
-		color.Yellow("%s %s %s", left_pad, tag, right_pad)
+		leftPad := strings.Repeat("-", size)
+		rightPad := strings.Repeat("-", rightSize)
+		color.Yellow("%s %s %s", leftPad, tag, rightPad)
 		for _, note := range notes {
 			color.HiBlue("ID: %s \n", color.WhiteString(note.ID))
 			color.HiBlue("Tags: %s \n", color.GreenString(strings.Join(note.Tags, " ")))

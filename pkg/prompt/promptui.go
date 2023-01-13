@@ -7,7 +7,8 @@ import (
 	"github.com/manifoldco/promptui"
 )
 
-func PromptForString(label string) string {
+// ForString prompts the user for a string
+func ForString(label string) string {
 	prompt := promptui.Prompt{
 		Label: label,
 	}
@@ -22,6 +23,7 @@ func PromptForString(label string) string {
 	return result
 }
 
+// PromptForStringWithDefault prompts the user for a string with a default value
 func PromptForStringArray(label string) []string {
 	prompt := promptui.Prompt{
 		Label: label,
