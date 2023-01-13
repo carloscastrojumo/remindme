@@ -12,13 +12,13 @@ import (
 
 // Note struct for storing notes in MongoDB
 type Note struct {
-	Id          primitive.ObjectID `bson:"_id,omitempty"`
+	ID          primitive.ObjectID `bson:"_id,omitempty"`
 	Tags        []string           `bson:"tags"`
 	Command     string             `bson:"command"`
 	Description string             `bson:"description"`
 }
 
-// Store struct for storing MongoDB client
+// Config struct for storing MongoDB client
 type Config struct {
 	Host       string
 	Port       int
@@ -70,7 +70,7 @@ func (s *Store) GetByTags(tags []string) (interface{}, error) {
 			if err := cur.Decode(&n); err != nil {
 				return nil, err
 			}
-			notes[n.Id.String()] = n
+			notes[n.ID.String()] = n
 		}
 	}
 
@@ -95,7 +95,7 @@ func (s *Store) GetAll() (interface{}, error) {
 		if err := cur.Decode(&n); err != nil {
 			return nil, err
 		}
-		notes[n.Id.String()] = n
+		notes[n.ID.String()] = n
 	}
 
 	var result []Note
@@ -155,7 +155,7 @@ func (s *Store) Search(searchWord string, searchLocations []string) (interface{}
 		if err := cur.Decode(&n); err != nil {
 			return nil, err
 		}
-		notes[n.Id.String()] = n
+		notes[n.ID.String()] = n
 	}
 
 	var result []Note
