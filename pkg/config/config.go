@@ -51,12 +51,7 @@ func promptConfigFile() {
 		viper.Set("mongo.database", prompt.PromptForString("Mongo database"))
 		viper.Set("mongo.collection", prompt.PromptForString("Mongo collection"))
 	case "yaml":
-		dataDir := xdg.DataHome + "/remindme"
-		if _, err := os.Stat(dataDir); os.IsNotExist(err) {
-			if os.Mkdir(dataDir, 0755) != nil {
-				color.Red("Error while creating data folder: %s", err)
-			}
-		}
+		dataDir := xdg.Home + "/.config/remindme"
 		dataFilename := prompt.PromptForString("YAML file name (current directory: " + dataDir + ")")
 		viper.Set("yaml.name", dataDir + "/" + dataFilename)
 		
