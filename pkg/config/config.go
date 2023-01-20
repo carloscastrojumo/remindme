@@ -15,6 +15,8 @@ import (
 
 var appDir = xdg.Home + "/.config/remindme"
 
+var config = &storage.Config{}
+
 // InitConfig initializes the configuration
 func InitConfig() {
 	viper.AddConfigPath(appDir)
@@ -53,7 +55,7 @@ func promptConfigFile() {
 		viper.Set("mongo.collection", prompt.ForString("Mongo collection"))
 	case "yaml":
 		dataFilename := prompt.ForString("YAML file name (current directory: " + appDir + ")")
-		viper.Set("yaml.name", appDir + "/" + dataFilename)
+		viper.Set("yaml.name", appDir+"/"+dataFilename)
 	}
 
 	saveConfigFile()
@@ -80,12 +82,15 @@ func GetNoteService() *storage.NoteService {
 			os.Exit(1)
 		}
 
-		storageConfig := &storage.Config{
-			StorageType:   "mongo",
-			StorageConfig: &mongoConfig,
-		}
+		// storageConfig := &storage.Config{
+		// 	StorageType:   "mongo",
+		// 	StorageConfig: &mongoConfig,
+		// }
 
-		return initNoteService(storageConfig)
+		config.StorageType = "mongo"
+		config.StorageConfig = &mongoConfig
+
+		// return initNoteService(storageConfig)
 	case "yaml":
 		color.Blue("Using YAML storage")
 		var yamlConfig yaml.Config
@@ -96,21 +101,34 @@ func GetNoteService() *storage.NoteService {
 			os.Exit(1)
 		}
 
-		storageConfig := &storage.Config{
-			StorageType:   "yaml",
-			StorageConfig: &yamlConfig,
-		}
+		// storageConfig := &storage.Config{
+		// 	StorageType:   "yaml",
+		// 	StorageConfig: &yamlConfig,
+		// }
+		config.StorageType = "yaml"
+		config.StorageConfig = &yamlConfig
 
-		return initNoteService(storageConfig)
+		// return initNoteService(storageConfig)
 	default:
 		color.Red("No storage type found")
 		os.Exit(1)
 	}
 
-	return nil
+	// return nil
+	return initNoteService(config)
 }
 
 func initNoteService(storageConfig *storage.Config) *storage.NoteService {
 	storeService := storage.GetStorage(storageConfig)
 	return storage.NewNoteService(storeService)
+}
+
+func GetConfig() {
+	fmt.Println("Configuration:")
+	// simply print config file???
+
+	// fmt.Println("File: " + viper.ConfigFileUsed())
+	// fmt.Println("Type: " + config.StorageType)
+	// fmt.Println("Content: " + config.StorageConfig.(*yaml.Config).Name)
+
 }
