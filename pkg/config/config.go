@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/adrg/xdg"
 	prompt "github.com/carloscastrojumo/remindme/pkg/prompt"
@@ -69,52 +70,38 @@ func saveConfigFile() {
 
 // GetNoteService returns a new note service
 func GetNoteService() *storage.NoteService {
-	storageType := viper.GetString("storageType")
+	config.StorageType = viper.GetString("storageType")
 
-	switch storageType {
+	switch config.StorageType {
 	case "mongo":
 		color.Blue("Using Mongo storage")
 		var mongoConfig mongo.Config
 		err := viper.UnmarshalKey("mongo", &mongoConfig)
 
 		if err != nil {
-			color.Red("Could not read %s configuration: '%s'", storageType, err)
+			color.Red("Could not read %s configuration: '%s'", config.StorageType, err)
 			os.Exit(1)
 		}
 
-		// storageConfig := &storage.Config{
-		// 	StorageType:   "mongo",
-		// 	StorageConfig: &mongoConfig,
-		// }
-
-		config.StorageType = "mongo"
 		config.StorageConfig = &mongoConfig
 
-		// return initNoteService(storageConfig)
 	case "yaml":
 		color.Blue("Using YAML storage")
 		var yamlConfig yaml.Config
 		err := viper.UnmarshalKey("yaml", &yamlConfig)
 
 		if err != nil {
-			color.Red("Whoops. Could not read %s configuration: '%s'", storageType, err)
+			color.Red("Whoops. Could not read %s configuration: '%s'", config.StorageType, err)
 			os.Exit(1)
 		}
 
-		// storageConfig := &storage.Config{
-		// 	StorageType:   "yaml",
-		// 	StorageConfig: &yamlConfig,
-		// }
-		config.StorageType = "yaml"
 		config.StorageConfig = &yamlConfig
 
-		// return initNoteService(storageConfig)
 	default:
 		color.Red("No storage type found")
 		os.Exit(1)
 	}
 
-	// return nil
 	return initNoteService(config)
 }
 
@@ -124,11 +111,14 @@ func initNoteService(storageConfig *storage.Config) *storage.NoteService {
 }
 
 func GetConfig() {
-	fmt.Println("Configuration:")
-	// simply print config file???
-
-	// fmt.Println("File: " + viper.ConfigFileUsed())
-	// fmt.Println("Type: " + config.StorageType)
-	// fmt.Println("Content: " + config.StorageConfig.(*yaml.Config).Name)
-
+	color.Blue("Configuration file: %s\n", color.GreenString(viper.ConfigFileUsed()))
+	switch config.StorageType {
+	case "yaml":
+		color.Blue("Data file: %s\n", color.GreenString(config.StorageConfig.(*yaml.Config).Name))
+	case "mongo":
+		color.Blue("Host: %s\n", color.GreenString(config.StorageConfig.(*mongo.Config).Host))
+		color.Blue("Port: %s\n", color.GreenString(strconv.Itoa(config.StorageConfig.(*mongo.Config).Port)))
+		color.Blue("Database: %s\n", color.GreenString(config.StorageConfig.(*mongo.Config).Database))
+		color.Blue("Collection: %s\n", color.GreenString(config.StorageConfig.(*mongo.Config).Collection))
+	}
 }
