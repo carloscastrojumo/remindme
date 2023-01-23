@@ -110,6 +110,7 @@ func initNoteService(storageConfig *storage.Config) *storage.NoteService {
 	return storage.NewNoteService(storeService)
 }
 
+// Prints the current configuration to screen
 func GetConfig() {
 	color.Blue("Configuration file: %s\n", color.GreenString(viper.ConfigFileUsed()))
 	switch config.StorageType {
