@@ -16,7 +16,8 @@ type Note struct {
 	Description string   `json:"description"`
 }
 
-type OrderedNote struct {
+// orderedNote struct
+type orderedNote struct {
 	Tags  []string
 	Notes []Note
 }
@@ -74,7 +75,7 @@ func Print(note interface{}) {
 }
 
 // get the tag with more length
-func getMaxLength(notes []OrderedNote) int {
+func getMaxLength(notes []orderedNote) int {
 	maxLength := 0
 	for _, note := range notes {
 		curLen := len(strings.Join(note.Tags, " "))
@@ -86,13 +87,13 @@ func getMaxLength(notes []OrderedNote) int {
 }
 
 // processNotes combine tags to group them if they are the same
-func processNotes(notes []Note) []OrderedNote {
-	orderedNotes := []OrderedNote{}
+func processNotes(notes []Note) []orderedNote {
+	orderedNotes := []orderedNote{}
 
 	for _, note := range notes {
-		id, missingTags := getIdAndMissingTags(note.Tags, orderedNotes)
+		id, missingTags := getIDAndMissingTags(note.Tags, orderedNotes)
 		if len(orderedNotes) == 0 || id == -1 {
-			or := OrderedNote{}
+			or := orderedNote{}
 			or.Tags = note.Tags
 			or.Notes = append(or.Notes, note)
 
@@ -108,20 +109,20 @@ func processNotes(notes []Note) []OrderedNote {
 	return orderedNotes
 }
 
-// getIdAndMissingTags gets the id of ordered note and missing tags for that id
-func getIdAndMissingTags(tags []string, notes []OrderedNote) (int, []string) {
+// getIDAndMissingTags gets the id of ordered note and missing tags for that id
+func getIDAndMissingTags(tags []string, notes []orderedNote) (int, []string) {
 	missingTags := []string{}
 	id := -1
-	break_for := false
+	breakFor := false
 
 	for i, note := range notes {
-		if break_for {
+		if breakFor {
 			break
 		}
 		for _, tag := range tags {
 			if containsTag(tag, note.Tags) {
 				id = i
-				break_for = true
+				breakFor = true
 				break
 			}
 		}
