@@ -6,7 +6,7 @@ ifeq ($(OS),Windows_NT)
 else
 	UNAME := $(shell uname -s)
 	ifeq ($(UNAME),Darwin)
-		GO_BIN_DIR = $(USER)/go/bin/
+		GO_BIN_DIR = /Users/$(USER)/go/bin/
 	else ifeq ($(UNAME),Linux)
 		GO_BIN_DIR = $(HOME)/go/bin/
 	else
