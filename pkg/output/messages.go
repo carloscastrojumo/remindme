@@ -61,7 +61,7 @@ func Print(note interface{}) {
 
 		for _, note := range orderedNote.Notes {
 			color.HiBlue("ID: %s \n", color.WhiteString(note.ID))
-			color.HiBlue("Tags: %s \n", color.GreenString(strings.Join(note.Tags, " ")))
+			color.HiBlue("Tags: %s \n", color.GreenString(strings.Join(note.Tags, ", ")))
 			color.HiBlue("Command: %s \n", color.RedString(note.Command))
 			color.HiBlue("Description: %s \n", color.WhiteString(note.Description))
 			// add full line only if there are more tags
@@ -86,7 +86,7 @@ func PrintTags(tags []string) {
 func getMaxLength(notes []orderedNote) int {
 	maxLength := 0
 	for _, note := range notes {
-		curLen := len(strings.Join(note.Tags, " "))
+		curLen := len(strings.Join(note.Tags, ", "))
 		if curLen > maxLength {
 			maxLength = curLen
 		}
