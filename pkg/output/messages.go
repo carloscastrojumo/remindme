@@ -74,6 +74,14 @@ func Print(note interface{}) {
 	}
 }
 
+// PrintTags print the tags
+func PrintTags(tags []string) {
+	color.Yellow("----- Available tags -----")
+	for _, tag := range tags {
+		color.Green(tag)
+	}
+}
+
 // get the tag with more length
 func getMaxLength(notes []orderedNote) int {
 	maxLength := 0
