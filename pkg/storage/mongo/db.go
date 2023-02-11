@@ -34,7 +34,7 @@ type Store struct {
 
 // Initialize MongoDB client
 func Initialize(config *Config) *Store {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://" + config.Host + ":" + strconv.Itoa(config.Port)))
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://"+config.Host+":"+strconv.Itoa(config.Port)))
 	if err != nil {
 		log.Fatal("MongoDB not running", err)
 	}
@@ -107,6 +107,21 @@ func (s *Store) GetAll() (interface{}, error) {
 	return result, nil
 }
 
+// GetTags returns all available tags
+func (s *Store) GetTags() ([]string, error) {
+	var tags []string
+	notesInt, _ := s.GetAll()
+	notes, _ := notesInt.([]Note)
+	for _, note := range notes {
+		for _, tag := range note.Tags {
+			if !containsTag(tags, tag) {
+				tags = append(tags, tag)
+			}
+		}
+	}
+	return tags, nil
+}
+
 // Delete a note by ID from MongoDB
 func (s *Store) Delete(id string) error {
 	objID, err := primitive.ObjectIDFromHex(id)
@@ -165,4 +180,13 @@ func (s *Store) Search(searchWord string, searchLocations []string) (interface{}
 	}
 
 	return result, nil
+}
+
+func containsTag(tags []string, tag string) bool {
+	for _, t := range tags {
+		if t == tag {
+			return true
+		}
+	}
+	return false
 }

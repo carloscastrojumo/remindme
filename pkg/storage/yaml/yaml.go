@@ -124,6 +124,19 @@ func (y *Yaml) GetAll() (interface{}, error) {
 	return y.Notes, nil
 }
 
+// GetTags returns all available tags
+func (y *Yaml) GetTags() ([]string, error) {
+	var tags []string
+	for _, note := range y.Notes {
+		for _, tag := range note.Tags {
+			if !containsTag(tags, tag) {
+				tags = append(tags, tag)
+			}
+		}
+	}
+	return tags, nil
+}
+
 // Delete deletes a note by id
 func (y *Yaml) Delete(id string) error {
 	for i, note := range y.Notes {
@@ -224,6 +237,15 @@ func (y *Yaml) appendSearchResults(notes []Note, newNotes []Note) []Note {
 func resultContainsID(notes []Note, searchID string) bool {
 	for _, item := range notes {
 		if item.ID == searchID {
+			return true
+		}
+	}
+	return false
+}
+
+func containsTag(tags []string, tag string) bool {
+	for _, t := range tags {
+		if t == tag {
 			return true
 		}
 	}

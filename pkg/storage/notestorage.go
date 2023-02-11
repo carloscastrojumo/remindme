@@ -15,6 +15,7 @@ type NoteStorage interface {
 	Get(id string) (interface{}, error)
 	GetByTags(tags []string) (interface{}, error)
 	GetAll() (interface{}, error)
+	GetTags() ([]string, error)
 	Delete(id string) error
 	DeleteByTags(tags []string) error
 	Search(searchWord string, searchLocations []string) (interface{}, error)
@@ -83,14 +84,19 @@ func (s *NoteService) Get(id string) (interface{}, error) {
 	return s.store.Get(id)
 }
 
+// GetByTags returns all the notes that match the tags
+func (s *NoteService) GetByTags(tags []string) (interface{}, error) {
+	return s.store.GetByTags(tags)
+}
+
 // GetAll returns all the notes
 func (s *NoteService) GetAll() (interface{}, error) {
 	return s.store.GetAll()
 }
 
-// GetByTags returns all the notes that match the tags
-func (s *NoteService) GetByTags(tags []string) (interface{}, error) {
-	return s.store.GetByTags(tags)
+// GetTags returns all available tags
+func (s *NoteService) GetTags() ([]string, error) {
+	return s.store.GetTags()
 }
 
 // Remove removes a note by id
