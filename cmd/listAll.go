@@ -6,8 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// var tags []string
-
 var listAllCmd = &cobra.Command{
 	Use:   "all",
 	Short: "List all notes in the database",
