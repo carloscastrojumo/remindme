@@ -6,19 +6,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var listAllCmd = &cobra.Command{
-	Use:   "all",
-	Short: "List all notes in the database",
-	Long:  "List all notes in the database",
+var listTags = &cobra.Command{
+	Use:   "tags",
+	Short: "List all tags available",
+	Long:  "List all tags available",
 	Run: func(cmd *cobra.Command, args []string) {
-		notes, err := noteService.GetAll()
+		tags, err := noteService.GetTags()
 		if err != nil {
 			color.Red("Error while getting notes by tags: %s", err)
 		}
-		output.Print(notes)
+		output.PrintTags(tags)
 	},
 }
 
 func init() {
-	listCmd.AddCommand(listAllCmd)
+	listCmd.AddCommand(listTags)
 }
