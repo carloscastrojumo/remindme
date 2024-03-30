@@ -1,0 +1,21 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@3f0f87098bd6b5c5b9a36d49c41d998ea58f9348 #v6.0.0
+        id: draft-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.JUMO_GITHUB_WRITER }}
+      - uses: eregon/publish-release@01df127f5e9a3c26935118e22e738d95b59d10ce  # v1.0.6
+        if: contains(github.event.pull_request.labels.*.name, 'release')
+        env:
+          GITHUB_TOKEN: ${{ secrets.JUMO_GITHUB_WRITER }}
+        with:
+          release_id: ${{ steps.draft-release.outputs.id }}

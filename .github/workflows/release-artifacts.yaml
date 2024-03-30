@@ -1,0 +1,30 @@
+name: Upload package to GitHub Releases
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release-artifacts:
+    name: Build and release binaries
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: ["386", amd64, arm64]
+        exclude:
+          - goarch: "386"
+            goos: darwin
+          - goarch: arm64
+            goos: windows
+    steps:
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 #v4.1.2
+      - name: Build and release binaries
+        uses: wangyoucao577/go-release-action@b173bce0484dc9f34c585181e5db16bd8756a21e #v1.49
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          goos: ${{ matrix.goos }}
+          goarch: ${{ matrix.goarch }}
+          goversion: "https://dl.google.com/go/go1.22.1.linux-amd64.tar.gz"
+          project_path: "."
+          binary_name: "rmm"
