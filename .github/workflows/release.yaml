@@ -1,8 +1,9 @@
 name: Upload package to GitHub Releases
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   publish:
@@ -16,7 +17,7 @@ jobs:
           go-version: 1.19
 
       - name: Build
-        run: go build -o rmm -v ./...
+        run: go build -o rmm main.go
 
       - name: Release
         uses: softprops/action-gh-release@v2
