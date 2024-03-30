@@ -54,7 +54,13 @@ func (s *Store) Get(id string) (interface{}, error) {
 		return nil, err
 	}
 	filter := bson.M{"_id": objID}
-	return s.db.FindOne(context.Background(), filter).DecodeBytes()
+	// return s.db.FindOne(context.Background(), filter).DecodeBytes()
+	result := Note{}
+	err = s.db.FindOne(context.Background(), filter).Decode(&result)
+	if err == mongo.ErrNoDocuments {
+		return nil, err
+	}
+	return result, nil
 }
 
 // GetByTags gets notes by tags from MongoDB
