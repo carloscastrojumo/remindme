@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/carloscastrojumo/remindme/pkg/output"
 	"github.com/fatih/color"
@@ -28,7 +29,8 @@ var searchCmd = &cobra.Command{
 			return errors.New("the word-to-search argument is required")
 		}
 
-		notes, err := noteService.Search(args[0], searchLocations)
+		words := strings.Split(args[0], " ")
+		notes, err := noteService.Search(words, searchLocations)
 		if err != nil {
 			color.Red("Error while getting notes by tags: %s", err)
 		}

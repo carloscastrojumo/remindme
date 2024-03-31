@@ -153,17 +153,19 @@ func (s *Store) DeleteByTags(tags []string) error {
 }
 
 // Search for notes by tags, description or command from MongoDB
-func (s *Store) Search(searchWord string, searchLocations []string) (interface{}, error) {
+func (s *Store) Search(searchWords []string, searchLocations []string) (interface{}, error) {
 	notes := make(map[string]Note)
 	filterLocs := []bson.M{}
 	for _, searchLocation := range searchLocations {
-		switch searchLocation {
-		case "command":
-			filterLocs = append(filterLocs, bson.M{"command": primitive.Regex{Pattern: searchWord, Options: ""}})
-		case "description":
-			filterLocs = append(filterLocs, bson.M{"description": primitive.Regex{Pattern: searchWord, Options: ""}})
-		case "tags":
-			filterLocs = append(filterLocs, bson.M{"tags": primitive.Regex{Pattern: searchWord, Options: ""}})
+		for _, searchWord := range searchWords {
+			switch searchLocation {
+			case "command":
+				filterLocs = append(filterLocs, bson.M{"command": primitive.Regex{Pattern: searchWord, Options: ""}})
+			case "description":
+				filterLocs = append(filterLocs, bson.M{"description": primitive.Regex{Pattern: searchWord, Options: ""}})
+			case "tags":
+				filterLocs = append(filterLocs, bson.M{"tags": primitive.Regex{Pattern: searchWord, Options: ""}})
+			}
 		}
 	}
 

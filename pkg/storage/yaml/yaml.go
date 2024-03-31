@@ -162,8 +162,8 @@ func (y *Yaml) DeleteByTags(tags []string) error {
 	return y.save()
 }
 
-// Search returns notes by search word
-func (y *Yaml) Search(searchWord string, searchLocations []string) (interface{}, error) {
+// Search returns notes by search words
+func (y *Yaml) Search(searchWords []string, searchLocations []string) (interface{}, error) {
 	var filteredNotes []Note
 	var notes []Note
 	var err error
@@ -171,11 +171,11 @@ func (y *Yaml) Search(searchWord string, searchLocations []string) (interface{},
 	for _, searchLocation := range searchLocations {
 		switch searchLocation {
 		case "command":
-			notes, err = y.SearchInCommand(searchWord)
+			notes, err = y.SearchInCommand(searchWords)
 		case "description":
-			notes, err = y.SearchInDescription(searchWord)
+			notes, err = y.SearchInDescription(searchWords)
 		case "tags":
-			notes, err = y.SearchInTags(searchWord)
+			notes, err = y.SearchInTags(searchWords)
 		}
 
 		if err != nil {
@@ -188,12 +188,14 @@ func (y *Yaml) Search(searchWord string, searchLocations []string) (interface{},
 }
 
 // SearchInTags returns notes by search word in tags
-func (y *Yaml) SearchInTags(searchWord string) ([]Note, error) {
+func (y *Yaml) SearchInTags(searchWords []string) ([]Note, error) {
 	var filteredNotes []Note
 	for _, note := range y.Notes {
 		for _, noteTag := range note.Tags {
-			if strings.Contains(noteTag, searchWord) {
-				filteredNotes = append(filteredNotes, note)
+			for _, searchWord := range searchWords {
+				if strings.Contains(noteTag, searchWord) {
+					filteredNotes = append(filteredNotes, note)
+				}
 			}
 		}
 	}
@@ -201,22 +203,26 @@ func (y *Yaml) SearchInTags(searchWord string) ([]Note, error) {
 }
 
 // SearchInCommand returns notes by search word in command
-func (y *Yaml) SearchInCommand(searchWord string) ([]Note, error) {
+func (y *Yaml) SearchInCommand(searchWords []string) ([]Note, error) {
 	var filteredNotes []Note
 	for _, note := range y.Notes {
-		if strings.Contains(note.Command, searchWord) {
-			filteredNotes = append(filteredNotes, note)
+		for _, searchWord := range searchWords {
+			if strings.Contains(note.Command, searchWord) {
+				filteredNotes = append(filteredNotes, note)
+			}
 		}
 	}
 	return filteredNotes, nil
 }
 
 // SearchInDescription returns notes by search word in description
-func (y *Yaml) SearchInDescription(searchWord string) ([]Note, error) {
+func (y *Yaml) SearchInDescription(searchWords []string) ([]Note, error) {
 	var filteredNotes []Note
 	for _, note := range y.Notes {
-		if strings.Contains(note.Description, searchWord) {
-			filteredNotes = append(filteredNotes, note)
+		for _, searchWord := range searchWords {
+			if strings.Contains(note.Description, searchWord) {
+				filteredNotes = append(filteredNotes, note)
+			}
 		}
 	}
 	return filteredNotes, nil

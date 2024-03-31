@@ -18,7 +18,7 @@ type NoteStorage interface {
 	GetTags() ([]string, error)
 	Delete(id string) error
 	DeleteByTags(tags []string) error
-	Search(searchWord string, searchLocations []string) (interface{}, error)
+	Search(searchWords []string, searchLocations []string) (interface{}, error)
 }
 
 // NoteService is the service that handles the storage
@@ -109,9 +109,9 @@ func (s *NoteService) RemoveByTags(tags []string) error {
 	return s.store.DeleteByTags(tags)
 }
 
-// Search returns all the notes that match the search word
-func (s *NoteService) Search(searchWord string, searchLocations []string) (interface{}, error) {
-	color.Blue("Searching: %s\n", color.GreenString(searchWord))
+// Search returns all the notes that match the search words
+func (s *NoteService) Search(searchWords []string, searchLocations []string) (interface{}, error) {
+	color.Blue("Searching: %s\n", color.GreenString(strings.Join(searchWords, " ")))
 	color.Blue("In: %s\n", color.GreenString(strings.Join(searchLocations, " ")))
-	return s.store.Search(searchWord, searchLocations)
+	return s.store.Search(searchWords, searchLocations)
 }
