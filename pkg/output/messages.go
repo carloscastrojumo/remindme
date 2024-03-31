@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/atotto/clipboard"
 	"github.com/fatih/color"
-	"golang.design/x/clipboard"
 )
 
 // Note note struct
@@ -41,11 +41,7 @@ func Print(note interface{}) {
 	numberOfNotes := len(orderedNotes)
 
 	if numberOfNotes == 1 {
-		err := clipboard.Init()
-		if err != nil {
-			color.Red("Error while initializing clipboard: %s", err)
-		}
-		clipboard.Write(clipboard.FmtText, []byte(orderedNotes[0].Notes[0].Command))
+		clipboard.WriteAll(orderedNotes[0].Notes[0].Command)
 	}
 
 	for _, orderedNote := range orderedNotes {
