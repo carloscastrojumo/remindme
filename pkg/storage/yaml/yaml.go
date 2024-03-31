@@ -71,7 +71,7 @@ func (y *Yaml) Insert(note interface{}) error {
 
 	// if it doesn't, create new one
 	// generate new id
-	rand.Seed(time.Now().UnixNano())
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 	newNote.ID = strconv.Itoa(rand.Intn(1000000))
 
 	// append new note to notes
