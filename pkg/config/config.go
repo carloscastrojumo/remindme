@@ -44,7 +44,10 @@ func InitConfig() {
 }
 
 func promptConfigFile() {
-	storageType := prompt.ForString("What storage type do you want to use? (mongo, yaml)")
+	storageType := prompt.ForString("What storage type do you want to use? (mongo, yaml) [yaml]")
+	if len(storageType) == 0 {
+		storageType = "yaml"
+	}
 
 	viper.Set("storageType", storageType)
 
@@ -55,7 +58,10 @@ func promptConfigFile() {
 		viper.Set("mongo.database", prompt.ForString("Mongo database"))
 		viper.Set("mongo.collection", prompt.ForString("Mongo collection"))
 	case "yaml":
-		dataFilename := prompt.ForString("YAML file name (current directory: " + appDir + ")")
+		dataFilename := prompt.ForString("YAML file name (current directory: " + appDir + ") [data.yaml]")
+		if len(dataFilename) == 0 {
+			dataFilename = "data.yaml"
+		}
 		viper.Set("yaml.name", appDir+"/"+dataFilename)
 	}
 
