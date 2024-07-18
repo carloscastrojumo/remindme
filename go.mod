@@ -3,7 +3,7 @@ module github.com/carloscastrojumo/remindme
 go 1.22.1
 
 require (
-	github.com/adrg/xdg v0.4.0
+	github.com/adrg/xdg v0.5.0
 	github.com/atotto/clipboard v0.1.4
 	github.com/fatih/color v1.17.0
 	github.com/manifoldco/promptui v0.9.0
@@ -42,7 +42,7 @@ require (
 	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 )
