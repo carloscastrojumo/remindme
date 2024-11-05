@@ -2,6 +2,13 @@
 Reminde is a tool that helps you to remember commands that you use frequently, it's like a bookmark for your commands.
 You can add, remove, search commands that you have saved.
 
+## Requirements
+To benefit from the copy to clipboard functionality, you will need to have installed one of the following "clipboard manager" on Linux.
+```sh
+xsel, xclip, wl-clipboard or Termux:API add-on for termux-clipboard-get/set
+```
+
+
 ## To install
 
 Use the binary from the releases page or build it yourself.
@@ -10,6 +17,7 @@ Use the binary from the releases page or build it yourself.
 
 Remmindme is a command line tool, you can use it by typing `rmm` followed by the command you want.
 For every command you can use the help flag to get more information about the command.
+
 
 ### Help
 
