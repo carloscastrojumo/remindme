@@ -7,8 +7,8 @@ import (
 
 var removeCmd = &cobra.Command{
 	Use:   "rm",
-	Short: "Add new note to the database",
-	Long:  `Add new note to the database`,
+	Short: "Remove note from the database",
+	Long:  `Remove note from the database`,
 	Run: func(cmd *cobra.Command, args []string) {
 		id, _ := cmd.Flags().GetString("id")
 		tags, _ := cmd.Flags().GetStringArray("tags")
