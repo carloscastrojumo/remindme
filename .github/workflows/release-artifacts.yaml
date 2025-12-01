@@ -18,7 +18,7 @@ jobs:
           - goarch: arm64
             goos: windows
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd #v4.1.2
+      - uses: actions/checkout@c2d88d3ecc89a9ef08eebf45d9637801dcee7eb5 #v4.1.2
       - name: Build and release binaries
         uses: wangyoucao577/go-release-action@481a2c1a0f1be199722e3e9b74d7199acafc30a8 #v1.53
         with:
