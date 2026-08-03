@@ -8,7 +8,7 @@ jobs:
   ci:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
 
       - name: Set up Go
         uses: actions/setup-go@v7
