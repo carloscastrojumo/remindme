@@ -3,6 +3,7 @@ package storage
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	mongo "github.com/carloscastrojumo/remindme/pkg/storage/mongo"
@@ -136,7 +137,7 @@ func (s *NoteService) RemoveByTags(tags []string) error {
 
 // Search returns all the notes that match the search words
 func (s *NoteService) Search(searchWords []string, searchLocations []string) (interface{}, error) {
-	color.Blue("Searching: %s\n", color.GreenString(strings.Join(searchWords, " ")))
-	color.Blue("In: %s\n", color.GreenString(strings.Join(searchLocations, " ")))
+	color.New(color.FgBlue).Fprintf(os.Stderr, "Searching: %s\n", color.GreenString(strings.Join(searchWords, " ")))
+	color.New(color.FgBlue).Fprintf(os.Stderr, "In: %s\n", color.GreenString(strings.Join(searchLocations, " ")))
 	return s.store.Search(searchWords, searchLocations)
 }

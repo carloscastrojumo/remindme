@@ -90,7 +90,7 @@ func GetNoteService() (*storage.NoteService, error) {
 
 	switch config.StorageType {
 	case "mongo":
-		color.Blue("Using Mongo storage")
+		color.New(color.FgBlue).Fprintln(os.Stderr, "Using Mongo storage")
 		var mongoConfig mongo.Config
 		if err := viper.UnmarshalKey("mongo", &mongoConfig); err != nil {
 			return nil, fmt.Errorf("read %s configuration: %w", config.StorageType, err)
@@ -99,7 +99,7 @@ func GetNoteService() (*storage.NoteService, error) {
 		config.StorageConfig = &mongoConfig
 
 	case "yaml":
-		color.Blue("Using YAML storage")
+		color.New(color.FgBlue).Fprintln(os.Stderr, "Using YAML storage")
 		var yamlConfig yaml.Config
 		if err := viper.UnmarshalKey("yaml", &yamlConfig); err != nil {
 			return nil, fmt.Errorf("read %s configuration: %w", config.StorageType, err)
