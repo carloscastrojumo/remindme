@@ -21,7 +21,7 @@ This installs the `rmm` binary into `$GOBIN` (or `$GOPATH/bin`).
 
 ## Configuration
 
-On first run, `rmm` asks which storage to use and writes the answers to `~/.config/remindme/config.yaml`:
+On first run, `rmm` asks which storage to use and writes the answers to `~/.config/remindme/config.yaml`, or `$XDG_CONFIG_HOME/remindme/config.yaml` when `XDG_CONFIG_HOME` is set and no config exists in `~/.config/remindme` yet:
 
 - `yaml` (default): notes are stored in a YAML file, `~/.config/remindme/data.yaml` unless you choose another name.
 - `mongo`: notes are stored in a MongoDB collection.

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/adrg/xdg"
@@ -15,7 +16,21 @@ import (
 	"github.com/spf13/viper"
 )
 
-var appDir = xdg.Home + "/.config/remindme"
+var appDir = configDir()
+
+// configDir honors an absolute $XDG_CONFIG_HOME, but keeps using
+// ~/.config/remindme when a config file already exists there.
+func configDir() string {
+	legacy := filepath.Join(xdg.Home, ".config", "remindme")
+	base := os.Getenv("XDG_CONFIG_HOME")
+	if !filepath.IsAbs(base) {
+		return legacy
+	}
+	if _, err := os.Stat(filepath.Join(legacy, "config.yaml")); err == nil {
+		return legacy
+	}
+	return filepath.Join(base, "remindme")
+}
 
 var config = &storage.Config{}
 
@@ -69,17 +84,15 @@ func promptConfigFile() error {
 		if len(dataFilename) == 0 {
 			dataFilename = "data.yaml"
 		}
-		viper.Set("yaml.name", appDir+"/"+dataFilename)
+		viper.Set("yaml.name", filepath.Join(appDir, dataFilename))
 	}
 
 	return saveConfigFile()
 }
 
 func saveConfigFile() error {
-	configDir := xdg.Home + "/.config/remindme"
-	viper.AddConfigPath(configDir)
 	viper.SetConfigPermissions(0600)
-	if err := viper.WriteConfigAs(configDir + "/config.yaml"); err != nil {
+	if err := viper.WriteConfigAs(filepath.Join(appDir, "config.yaml")); err != nil {
 		return fmt.Errorf("write config file: %w", err)
 	}
 	return nil
