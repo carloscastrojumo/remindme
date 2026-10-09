@@ -9,18 +9,17 @@ import (
 	"time"
 
 	"github.com/carloscastrojumo/remindme/internal/storage"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // Note struct for storing notes in MongoDB
 type Note struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty"`
-	Tags        []string           `bson:"tags"`
-	Command     string             `bson:"command"`
-	Description string             `bson:"description"`
+	ID          bson.ObjectID `bson:"_id,omitempty"`
+	Tags        []string      `bson:"tags"`
+	Command     string        `bson:"command"`
+	Description string        `bson:"description"`
 }
 
 func (n Note) toStorage() storage.Note {
@@ -49,7 +48,7 @@ func Initialize(config *Config) (*Store, error) {
 		ApplyURI("mongodb://" + address).
 		SetConnectTimeout(connectTimeout).
 		SetServerSelectionTimeout(connectTimeout)
-	client, err := mongo.Connect(context.Background(), opts)
+	client, err := mongo.Connect(opts)
 	if err != nil {
 		return nil, fmt.Errorf("connect to MongoDB at %s: %w", address, err)
 	}
@@ -70,7 +69,7 @@ func (s *Store) Insert(note storage.Note) error {
 
 // Get a note from MongoDB
 func (s *Store) Get(id string) (storage.Note, error) {
-	objID, err := primitive.ObjectIDFromHex(id)
+	objID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return storage.Note{}, fmt.Errorf("invalid note id %q: %w", id, err)
 	}
@@ -115,7 +114,7 @@ func (s *Store) GetTags() ([]string, error) {
 
 // Delete a note by ID from MongoDB
 func (s *Store) Delete(id string) error {
-	objID, err := primitive.ObjectIDFromHex(id)
+	objID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
@@ -148,7 +147,7 @@ func (s *Store) Search(searchWords []string, searchLocations []string) ([]storag
 	filterLocs := []bson.M{}
 	for _, searchLocation := range searchLocations {
 		for _, searchWord := range searchWords {
-			pattern := primitive.Regex{Pattern: regexp.QuoteMeta(searchWord)}
+			pattern := bson.Regex{Pattern: regexp.QuoteMeta(searchWord)}
 			switch searchLocation {
 			case "command":
 				filterLocs = append(filterLocs, bson.M{"command": pattern})
