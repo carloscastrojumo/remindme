@@ -24,7 +24,10 @@ var addCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// if the user didn't provide any flags, we prompt for the note
 		if note.Command == "" && note.Description == "" && len(note.Tags) == 0 {
-			note = promptNote()
+			var err error
+			if note, err = promptNote(); err != nil {
+				return err
+			}
 		}
 
 		if err := noteService.Add(note); err != nil {
@@ -36,10 +39,17 @@ var addCmd = &cobra.Command{
 	},
 }
 
-func promptNote() storage.Note {
-	note := storage.Note{}
-	note.Command = prompt.ForString("Command")
-	note.Description = prompt.ForString("Description")
-	note.Tags = prompt.ForStringArray("Tags")
-	return note
+func promptNote() (storage.Note, error) {
+	var note storage.Note
+	var err error
+	if note.Command, err = prompt.ForRequiredString("Command"); err != nil {
+		return note, err
+	}
+	if note.Description, err = prompt.ForString("Description"); err != nil {
+		return note, err
+	}
+	if note.Tags, err = prompt.ForRequiredStringArray("Tags"); err != nil {
+		return note, err
+	}
+	return note, nil
 }

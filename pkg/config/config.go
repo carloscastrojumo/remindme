@@ -42,7 +42,10 @@ func InitConfig() error {
 }
 
 func promptConfigFile() error {
-	storageType := prompt.ForString("What storage type do you want to use? (mongo, yaml) [yaml]")
+	storageType, err := prompt.ForString("What storage type do you want to use? (mongo, yaml) [yaml]")
+	if err != nil {
+		return err
+	}
 	if len(storageType) == 0 {
 		storageType = "yaml"
 	}
@@ -51,12 +54,18 @@ func promptConfigFile() error {
 
 	switch storageType {
 	case "mongo":
-		viper.Set("mongo.host", prompt.ForString("Mongo host"))
-		viper.Set("mongo.port", prompt.ForString("Mongo port"))
-		viper.Set("mongo.database", prompt.ForString("Mongo database"))
-		viper.Set("mongo.collection", prompt.ForString("Mongo collection"))
+		for _, key := range []string{"host", "port", "database", "collection"} {
+			value, err := prompt.ForString("Mongo " + key)
+			if err != nil {
+				return err
+			}
+			viper.Set("mongo."+key, value)
+		}
 	case "yaml":
-		dataFilename := prompt.ForString("YAML file name (current directory: " + appDir + ") [data.yaml]")
+		dataFilename, err := prompt.ForString("YAML file name (current directory: " + appDir + ") [data.yaml]")
+		if err != nil {
+			return err
+		}
 		if len(dataFilename) == 0 {
 			dataFilename = "data.yaml"
 		}

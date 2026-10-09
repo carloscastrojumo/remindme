@@ -69,20 +69,36 @@ func NewNoteService(store NoteStorage) *NoteService {
 	return &NoteService{store: store}
 }
 
-// Add adds a new note
-func (s *NoteService) Add(note interface{}) error {
+// Add validates and adds a new note
+func (s *NoteService) Add(note Note) error {
+	note.Command = strings.TrimSpace(note.Command)
+	var tags []string
+	for _, tag := range note.Tags {
+		if tag = strings.TrimSpace(tag); tag != "" {
+			tags = append(tags, tag)
+		}
+	}
+	note.Tags = tags
+
+	if note.Command == "" {
+		return errors.New("command is required")
+	}
+	if len(note.Tags) == 0 {
+		return errors.New("at least one tag is required")
+	}
+
 	switch storageType {
 	case "yaml":
 		return s.store.Insert(yaml.Note{
-			Tags:        note.(Note).Tags,
-			Command:     note.(Note).Command,
-			Description: note.(Note).Description,
+			Tags:        note.Tags,
+			Command:     note.Command,
+			Description: note.Description,
 		})
 	case "mongo":
 		return s.store.Insert(mongo.Note{
-			Tags:        note.(Note).Tags,
-			Command:     note.(Note).Command,
-			Description: note.(Note).Description,
+			Tags:        note.Tags,
+			Command:     note.Command,
+			Description: note.Description,
 		})
 	}
 	return errors.New("storage type not supported")
