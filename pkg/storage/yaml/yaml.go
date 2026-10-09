@@ -151,11 +151,12 @@ func (y *Yaml) Delete(id string) error {
 			return y.save()
 		}
 	}
-	return nil
+	return fmt.Errorf("note %s not found", id)
 }
 
 // DeleteByTags deletes notes by tags
 func (y *Yaml) DeleteByTags(tags []string) error {
+	count := len(y.Notes)
 	y.Notes = slices.DeleteFunc(y.Notes, func(note Note) bool {
 		for _, tag := range tags {
 			if containsTag(note.Tags, tag) {
@@ -164,6 +165,9 @@ func (y *Yaml) DeleteByTags(tags []string) error {
 		}
 		return false
 	})
+	if len(y.Notes) == count {
+		return fmt.Errorf("no notes found with tags %v", tags)
+	}
 	return y.save()
 }
 

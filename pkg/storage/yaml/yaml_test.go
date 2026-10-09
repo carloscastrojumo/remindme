@@ -40,21 +40,22 @@ func TestDeleteByTags(t *testing.T) {
 	}
 
 	tests := []struct {
-		name string
-		tags []string
-		want []string
+		name    string
+		tags    []string
+		want    []string
+		wantErr bool
 	}{
 		{name: "adjacent matches", tags: []string{"x"}, want: []string{"c", "e"}},
 		{name: "multiple tags", tags: []string{"x", "z"}, want: []string{"c"}},
-		{name: "no match", tags: []string{"nope"}, want: []string{"a", "b", "c", "d", "e"}},
+		{name: "no match", tags: []string{"nope"}, want: []string{"a", "b", "c", "d", "e"}, wantErr: true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			store, path := newStore(t, notes...)
 
-			if err := store.DeleteByTags(tt.tags); err != nil {
-				t.Fatalf("DeleteByTags: %v", err)
+			if err := store.DeleteByTags(tt.tags); (err != nil) != tt.wantErr {
+				t.Fatalf("DeleteByTags error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			reloaded, err := Initialize(&Config{Name: path})
@@ -65,6 +66,17 @@ func TestDeleteByTags(t *testing.T) {
 				t.Errorf("remaining commands = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestDeleteUnknownIDReturnsError(t *testing.T) {
+	store, _ := newStore(t, Note{Command: "a", Tags: []string{"x"}})
+
+	if err := store.Delete("missing"); err == nil {
+		t.Fatal("Delete(missing) returned nil error")
+	}
+	if len(store.Notes) != 1 {
+		t.Errorf("Delete(missing) changed notes: %+v", store.Notes)
 	}
 }
 

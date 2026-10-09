@@ -101,15 +101,27 @@ func (s *Store) Delete(id string) error {
 		return err
 	}
 	filter := bson.M{"_id": objID}
-	_, err = s.db.DeleteOne(context.Background(), filter)
-	return err
+	result, err := s.db.DeleteOne(context.Background(), filter)
+	if err != nil {
+		return err
+	}
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("note %s not found", id)
+	}
+	return nil
 }
 
 // DeleteByTags deletes notes by tags from MongoDB
 func (s *Store) DeleteByTags(tags []string) error {
 	filter := bson.M{"tags": bson.M{"$in": tags}}
-	_, err := s.db.DeleteMany(context.Background(), filter)
-	return err
+	result, err := s.db.DeleteMany(context.Background(), filter)
+	if err != nil {
+		return err
+	}
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("no notes found with tags %v", tags)
+	}
+	return nil
 }
 
 // Search for notes by tags, description or command from MongoDB
