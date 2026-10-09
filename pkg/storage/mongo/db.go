@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -143,13 +144,14 @@ func (s *Store) Search(searchWords []string, searchLocations []string) (interfac
 	filterLocs := []bson.M{}
 	for _, searchLocation := range searchLocations {
 		for _, searchWord := range searchWords {
+			pattern := primitive.Regex{Pattern: regexp.QuoteMeta(searchWord)}
 			switch searchLocation {
 			case "command":
-				filterLocs = append(filterLocs, bson.M{"command": primitive.Regex{Pattern: searchWord, Options: ""}})
+				filterLocs = append(filterLocs, bson.M{"command": pattern})
 			case "description":
-				filterLocs = append(filterLocs, bson.M{"description": primitive.Regex{Pattern: searchWord, Options: ""}})
+				filterLocs = append(filterLocs, bson.M{"description": pattern})
 			case "tags":
-				filterLocs = append(filterLocs, bson.M{"tags": primitive.Regex{Pattern: searchWord, Options: ""}})
+				filterLocs = append(filterLocs, bson.M{"tags": pattern})
 			}
 		}
 	}
