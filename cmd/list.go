@@ -13,7 +13,7 @@ var listCmd = &cobra.Command{
 	Short:   "List notes from the database",
 	Long:    `List notes from the database, optionally filtered by ID or tags`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		tags, _ := cmd.Flags().GetStringArray("tags")
+		tags, _ := cmd.Flags().GetStringSlice("tags")
 		id, _ := cmd.Flags().GetString("id")
 
 		if id != "" {
@@ -44,7 +44,7 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
-	listCmd.Flags().StringArray("tags", []string{}, "Filter notes by tag")
+	listCmd.Flags().StringSlice("tags", []string{}, "Filter notes by tag, comma separated or repeated")
 	listCmd.Flags().String("id", "", "ID of the note")
 	rootCmd.AddCommand(listCmd)
 }

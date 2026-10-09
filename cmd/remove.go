@@ -13,7 +13,7 @@ var removeCmd = &cobra.Command{
 	Long:  `Remove note from the database`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		id, _ := cmd.Flags().GetString("id")
-		tags, _ := cmd.Flags().GetStringArray("tags")
+		tags, _ := cmd.Flags().GetStringSlice("tags")
 
 		if id != "" {
 			if err := noteService.Remove(id); err != nil {
@@ -34,7 +34,7 @@ var removeCmd = &cobra.Command{
 
 func init() {
 	removeCmd.Flags().String("id", "", "ID of the note to remove")
-	removeCmd.Flags().StringArray("tags", []string{}, "Remove all notes from tags")
+	removeCmd.Flags().StringSlice("tags", []string{}, "Remove all notes with any of these tags, comma separated or repeated")
 	removeCmd.MarkFlagsOneRequired("id", "tags")
 	rootCmd.AddCommand(removeCmd)
 }

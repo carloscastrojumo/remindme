@@ -11,7 +11,7 @@ import (
 var note storage.Note
 
 func init() {
-	addCmd.Flags().StringArrayVar(&note.Tags, "tags", []string{}, "Tags to add to the note")
+	addCmd.Flags().StringSliceVar(&note.Tags, "tags", []string{}, "Tags to add to the note, comma separated or repeated")
 	addCmd.Flags().StringVar(&note.Command, "command", "", "Command to add to the note")
 	addCmd.Flags().StringVar(&note.Description, "description", "", "Description to add to the note")
 	rootCmd.AddCommand(addCmd)
