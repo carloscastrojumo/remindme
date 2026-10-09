@@ -1,36 +1,22 @@
 package output
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/atotto/clipboard"
+	"github.com/carloscastrojumo/remindme/pkg/storage"
 	"github.com/fatih/color"
 )
-
-// Note note struct
-type Note struct {
-	ID          string   `json:"id"`
-	Tags        []string `json:"tags"`
-	Command     string   `json:"command"`
-	Description string   `json:"description"`
-}
 
 // orderedNote struct
 type orderedNote struct {
 	Tags  []string
-	Notes []Note
+	Notes []storage.Note
 }
 
 // Print print the notes
-func Print(note interface{}) {
-	notes := []Note{}
-	s, _ := json.MarshalIndent(note, "", "\t")
-	if err := json.Unmarshal(s, &notes); err != nil {
-		color.Red("Error while unmarshalling notes: %s", err)
-	}
-
+func Print(notes []storage.Note) {
 	if len(notes) == 0 {
 		color.Yellow("No notes found")
 		return
@@ -100,7 +86,7 @@ func getMaxLength(notes []orderedNote) int {
 }
 
 // processNotes combine tags to group them if they are the same
-func processNotes(notes []Note) []orderedNote {
+func processNotes(notes []storage.Note) []orderedNote {
 	orderedNotes := []orderedNote{}
 
 	for _, note := range notes {
@@ -168,7 +154,7 @@ func containsTag(tag string, tags []string) bool {
 }
 
 // containsID check if id already exists
-func containsID(id string, notes []Note) bool {
+func containsID(id string, notes []storage.Note) bool {
 	for _, n := range notes {
 		if n.ID == id {
 			return true

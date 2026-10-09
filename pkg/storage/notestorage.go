@@ -2,36 +2,27 @@ package storage
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 
-	mongo "github.com/carloscastrojumo/remindme/pkg/storage/mongo"
-	yaml "github.com/carloscastrojumo/remindme/pkg/storage/yaml"
 	"github.com/fatih/color"
 )
 
 // NoteStorage is the interface that wraps the basic storage methods.
 type NoteStorage interface {
-	Insert(item interface{}) error
-	Get(id string) (interface{}, error)
-	GetByTags(tags []string) (interface{}, error)
-	GetAll() (interface{}, error)
+	Insert(note Note) error
+	Get(id string) (Note, error)
+	GetByTags(tags []string) ([]Note, error)
+	GetAll() ([]Note, error)
 	GetTags() ([]string, error)
 	Delete(id string) error
 	DeleteByTags(tags []string) error
-	Search(searchWords []string, searchLocations []string) (interface{}, error)
+	Search(searchWords []string, searchLocations []string) ([]Note, error)
 }
 
 // NoteService is the service that handles the storage
 type NoteService struct {
 	store NoteStorage
-}
-
-// Config is the configuration for the storage
-type Config struct {
-	StorageType   string
-	StorageConfig interface{}
 }
 
 // Note is the struct that represents a note
@@ -40,29 +31,6 @@ type Note struct {
 	Tags        []string
 	Command     string
 	Description string
-}
-
-var storageType string
-
-// GetStorage returns the storage type
-func GetStorage(config *Config) (NoteStorage, error) {
-	switch config.StorageType {
-	case "yaml":
-		storageType = "yaml"
-		store, err := yaml.Initialize(config.StorageConfig.(*yaml.Config))
-		if err != nil {
-			return nil, err
-		}
-		return store, nil
-	case "mongo":
-		storageType = "mongo"
-		store, err := mongo.Initialize(config.StorageConfig.(*mongo.Config))
-		if err != nil {
-			return nil, err
-		}
-		return store, nil
-	}
-	return nil, fmt.Errorf("storage type %q not supported", config.StorageType)
 }
 
 // NewNoteService returns a new note service
@@ -88,35 +56,21 @@ func (s *NoteService) Add(note Note) error {
 		return errors.New("at least one tag is required")
 	}
 
-	switch storageType {
-	case "yaml":
-		return s.store.Insert(yaml.Note{
-			Tags:        note.Tags,
-			Command:     note.Command,
-			Description: note.Description,
-		})
-	case "mongo":
-		return s.store.Insert(mongo.Note{
-			Tags:        note.Tags,
-			Command:     note.Command,
-			Description: note.Description,
-		})
-	}
-	return errors.New("storage type not supported")
+	return s.store.Insert(note)
 }
 
 // Get returns a note by id
-func (s *NoteService) Get(id string) (interface{}, error) {
+func (s *NoteService) Get(id string) (Note, error) {
 	return s.store.Get(id)
 }
 
 // GetByTags returns all the notes that match the tags
-func (s *NoteService) GetByTags(tags []string) (interface{}, error) {
+func (s *NoteService) GetByTags(tags []string) ([]Note, error) {
 	return s.store.GetByTags(tags)
 }
 
 // GetAll returns all the notes
-func (s *NoteService) GetAll() (interface{}, error) {
+func (s *NoteService) GetAll() ([]Note, error) {
 	return s.store.GetAll()
 }
 
@@ -136,7 +90,7 @@ func (s *NoteService) RemoveByTags(tags []string) error {
 }
 
 // Search returns all the notes that match the search words
-func (s *NoteService) Search(searchWords []string, searchLocations []string) (interface{}, error) {
+func (s *NoteService) Search(searchWords []string, searchLocations []string) ([]Note, error) {
 	color.New(color.FgBlue).Fprintf(os.Stderr, "Searching: %s\n", color.GreenString(strings.Join(searchWords, " ")))
 	color.New(color.FgBlue).Fprintf(os.Stderr, "In: %s\n", color.GreenString(strings.Join(searchLocations, " ")))
 	return s.store.Search(searchWords, searchLocations)

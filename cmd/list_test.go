@@ -8,21 +8,17 @@ import (
 
 	"github.com/atotto/clipboard"
 	"github.com/carloscastrojumo/remindme/pkg/storage"
-	"github.com/carloscastrojumo/remindme/pkg/storage/yaml"
 	"github.com/fatih/color"
 )
 
 type fakeStore struct {
 	storage.NoteStorage
-	note yaml.Note
+	note storage.Note
 	err  error
 }
 
-func (f fakeStore) Get(id string) (interface{}, error) {
-	if f.err != nil {
-		return nil, f.err
-	}
-	return f.note, nil
+func (f fakeStore) Get(id string) (storage.Note, error) {
+	return f.note, f.err
 }
 
 func captureOutput(t *testing.T) *bytes.Buffer {
@@ -50,7 +46,7 @@ func listByID(t *testing.T, store fakeStore, id string) error {
 func TestListByIDPrintsNote(t *testing.T) {
 	out := captureOutput(t)
 
-	err := listByID(t, fakeStore{note: yaml.Note{ID: "42", Tags: []string{"k8s"}, Command: "kubectl get pods"}}, "42")
+	err := listByID(t, fakeStore{note: storage.Note{ID: "42", Tags: []string{"k8s"}, Command: "kubectl get pods"}}, "42")
 
 	if err != nil {
 		t.Fatalf("list --id: %v", err)

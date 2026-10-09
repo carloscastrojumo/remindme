@@ -32,7 +32,7 @@ func configDir() string {
 	return filepath.Join(base, "remindme")
 }
 
-var config = &storage.Config{}
+var storageConfig any
 
 // InitConfig initializes the configuration
 func InitConfig() error {
@@ -100,52 +100,55 @@ func saveConfigFile() error {
 
 // GetNoteService returns a new note service
 func GetNoteService() (*storage.NoteService, error) {
-	config.StorageType = viper.GetString("storageType")
+	storageType := viper.GetString("storageType")
 
-	switch config.StorageType {
+	var store storage.NoteStorage
+	switch storageType {
 	case "mongo":
 		color.New(color.FgBlue).Fprintln(os.Stderr, "Using Mongo storage")
 		var mongoConfig mongo.Config
 		if err := viper.UnmarshalKey("mongo", &mongoConfig); err != nil {
-			return nil, fmt.Errorf("read %s configuration: %w", config.StorageType, err)
+			return nil, fmt.Errorf("read %s configuration: %w", storageType, err)
 		}
+		storageConfig = &mongoConfig
 
-		config.StorageConfig = &mongoConfig
+		mongoStore, err := mongo.Initialize(&mongoConfig)
+		if err != nil {
+			return nil, fmt.Errorf("initialize %s storage: %w", storageType, err)
+		}
+		store = mongoStore
 
 	case "yaml":
 		color.New(color.FgBlue).Fprintln(os.Stderr, "Using YAML storage")
 		var yamlConfig yaml.Config
 		if err := viper.UnmarshalKey("yaml", &yamlConfig); err != nil {
-			return nil, fmt.Errorf("read %s configuration: %w", config.StorageType, err)
+			return nil, fmt.Errorf("read %s configuration: %w", storageType, err)
 		}
+		storageConfig = &yamlConfig
 
-		config.StorageConfig = &yamlConfig
+		yamlStore, err := yaml.Initialize(&yamlConfig)
+		if err != nil {
+			return nil, fmt.Errorf("initialize %s storage: %w", storageType, err)
+		}
+		store = yamlStore
 
 	default:
-		return nil, fmt.Errorf("unsupported storage type %q, expected mongo or yaml", config.StorageType)
+		return nil, fmt.Errorf("unsupported storage type %q, expected mongo or yaml", storageType)
 	}
 
-	return initNoteService(config)
-}
-
-func initNoteService(storageConfig *storage.Config) (*storage.NoteService, error) {
-	storeService, err := storage.GetStorage(storageConfig)
-	if err != nil {
-		return nil, fmt.Errorf("initialize %s storage: %w", storageConfig.StorageType, err)
-	}
-	return storage.NewNoteService(storeService), nil
+	return storage.NewNoteService(store), nil
 }
 
 // GetConfig prints the current configuration to screen
 func GetConfig() {
 	color.Blue("Configuration file: %s\n", color.GreenString(viper.ConfigFileUsed()))
-	switch config.StorageType {
-	case "yaml":
-		color.Blue("Data file: %s\n", color.GreenString(config.StorageConfig.(*yaml.Config).Name))
-	case "mongo":
-		color.Blue("Host: %s\n", color.GreenString(config.StorageConfig.(*mongo.Config).Host))
-		color.Blue("Port: %s\n", color.GreenString(strconv.Itoa(config.StorageConfig.(*mongo.Config).Port)))
-		color.Blue("Database: %s\n", color.GreenString(config.StorageConfig.(*mongo.Config).Database))
-		color.Blue("Collection: %s\n", color.GreenString(config.StorageConfig.(*mongo.Config).Collection))
+	switch c := storageConfig.(type) {
+	case *yaml.Config:
+		color.Blue("Data file: %s\n", color.GreenString(c.Name))
+	case *mongo.Config:
+		color.Blue("Host: %s\n", color.GreenString(c.Host))
+		color.Blue("Port: %s\n", color.GreenString(strconv.Itoa(c.Port)))
+		color.Blue("Database: %s\n", color.GreenString(c.Database))
+		color.Blue("Collection: %s\n", color.GreenString(c.Collection))
 	}
 }

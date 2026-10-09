@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/carloscastrojumo/remindme/pkg/storage"
 	"github.com/fatih/color"
 	yaml "gopkg.in/yaml.v3"
 )
@@ -62,8 +63,8 @@ func Initialize(config *Config) (*Yaml, error) {
 }
 
 // Insert inserts a new note to YAML storage
-func (y *Yaml) Insert(note interface{}) error {
-	newNote := note.(Note)
+func (y *Yaml) Insert(note storage.Note) error {
+	newNote := Note(note)
 
 	// check if command already exists
 	// if it does, update tags and description
@@ -99,18 +100,18 @@ func (y *Yaml) save() error {
 }
 
 // Get returns a note by id
-func (y *Yaml) Get(id string) (interface{}, error) {
+func (y *Yaml) Get(id string) (storage.Note, error) {
 	for _, note := range y.Notes {
 		if note.ID == id {
-			return note, nil
+			return storage.Note(note), nil
 		}
 	}
 
-	return nil, fmt.Errorf("note %s not found", id)
+	return storage.Note{}, fmt.Errorf("note %s not found", id)
 }
 
 // GetByTags returns notes by tags
-func (y *Yaml) GetByTags(tags []string) (interface{}, error) {
+func (y *Yaml) GetByTags(tags []string) ([]storage.Note, error) {
 	var filteredNotes []Note
 	for _, note := range y.Notes {
 		for _, tag := range tags {
@@ -122,12 +123,12 @@ func (y *Yaml) GetByTags(tags []string) (interface{}, error) {
 		}
 	}
 
-	return filteredNotes, nil
+	return toStorage(filteredNotes), nil
 }
 
 // GetAll returns all notes
-func (y *Yaml) GetAll() (interface{}, error) {
-	return y.Notes, nil
+func (y *Yaml) GetAll() ([]storage.Note, error) {
+	return toStorage(y.Notes), nil
 }
 
 // GetTags returns all available tags
@@ -172,7 +173,7 @@ func (y *Yaml) DeleteByTags(tags []string) error {
 }
 
 // Search returns notes by search words
-func (y *Yaml) Search(searchWords []string, searchLocations []string) (interface{}, error) {
+func (y *Yaml) Search(searchWords []string, searchLocations []string) ([]storage.Note, error) {
 	var filteredNotes []Note
 	var notes []Note
 	var err error
@@ -193,7 +194,7 @@ func (y *Yaml) Search(searchWords []string, searchLocations []string) (interface
 
 		filteredNotes = y.appendSearchResults(filteredNotes, notes)
 	}
-	return filteredNotes, nil
+	return toStorage(filteredNotes), nil
 }
 
 // SearchInTags returns notes by search word in tags
@@ -256,6 +257,14 @@ func resultContainsID(notes []Note, searchID string) bool {
 		}
 	}
 	return false
+}
+
+func toStorage(notes []Note) []storage.Note {
+	result := make([]storage.Note, len(notes))
+	for i, note := range notes {
+		result[i] = storage.Note(note)
+	}
+	return result
 }
 
 func containsTag(tags []string, tag string) bool {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/carloscastrojumo/remindme/pkg/output"
+	"github.com/carloscastrojumo/remindme/pkg/storage"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +22,7 @@ var listCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			output.Print([]interface{}{note})
+			output.Print([]storage.Note{note})
 		}
 
 		if len(tags) > 0 {

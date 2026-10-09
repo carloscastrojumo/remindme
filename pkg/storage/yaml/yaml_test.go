@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"slices"
 	"testing"
+
+	"github.com/carloscastrojumo/remindme/pkg/storage"
 )
 
 func newStore(t *testing.T, notes ...Note) (*Yaml, string) {
@@ -15,7 +17,7 @@ func newStore(t *testing.T, notes ...Note) (*Yaml, string) {
 		t.Fatalf("Initialize: %v", err)
 	}
 	for _, n := range notes {
-		if err := store.Insert(n); err != nil {
+		if err := store.Insert(storage.Note(n)); err != nil {
 			t.Fatalf("Insert(%q): %v", n.Command, err)
 		}
 	}
@@ -111,8 +113,8 @@ func TestGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Get(%q): %v", id, err)
 	}
-	if note := got.(Note); note.Command != "a" {
-		t.Errorf("Get(%q).Command = %q, want %q", id, note.Command, "a")
+	if got.Command != "a" {
+		t.Errorf("Get(%q).Command = %q, want %q", id, got.Command, "a")
 	}
 
 	if _, err := store.Get("missing"); err == nil {

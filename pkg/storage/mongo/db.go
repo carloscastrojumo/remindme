@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/carloscastrojumo/remindme/pkg/storage"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,6 +21,10 @@ type Note struct {
 	Tags        []string           `bson:"tags"`
 	Command     string             `bson:"command"`
 	Description string             `bson:"description"`
+}
+
+func (n Note) toStorage() storage.Note {
+	return storage.Note{ID: n.ID.Hex(), Tags: n.Tags, Command: n.Command, Description: n.Description}
 }
 
 // Config struct for storing MongoDB client
@@ -58,47 +63,46 @@ func Initialize(config *Config) (*Store, error) {
 }
 
 // Insert a note into MongoDB
-func (s *Store) Insert(item interface{}) error {
-	_, err := s.db.InsertOne(context.Background(), item)
+func (s *Store) Insert(note storage.Note) error {
+	_, err := s.db.InsertOne(context.Background(), Note{Tags: note.Tags, Command: note.Command, Description: note.Description})
 	return err
 }
 
 // Get a note from MongoDB
-func (s *Store) Get(id string) (interface{}, error) {
+func (s *Store) Get(id string) (storage.Note, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, fmt.Errorf("invalid note id %q: %w", id, err)
+		return storage.Note{}, fmt.Errorf("invalid note id %q: %w", id, err)
 	}
 	filter := bson.M{"_id": objID}
 	result := Note{}
 	err = s.db.FindOne(context.Background(), filter).Decode(&result)
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		return nil, fmt.Errorf("note %s not found", id)
+		return storage.Note{}, fmt.Errorf("note %s not found", id)
 	}
 	if err != nil {
-		return nil, err
+		return storage.Note{}, err
 	}
-	return result, nil
+	return result.toStorage(), nil
 }
 
 // GetByTags gets notes by tags from MongoDB
-func (s *Store) GetByTags(tags []string) (interface{}, error) {
+func (s *Store) GetByTags(tags []string) ([]storage.Note, error) {
 	return s.find(bson.M{"tags": bson.M{"$in": tags}})
 }
 
 // GetAll gets all notes from MongoDB
-func (s *Store) GetAll() (interface{}, error) {
+func (s *Store) GetAll() ([]storage.Note, error) {
 	return s.find(bson.M{})
 }
 
 // GetTags returns all available tags
 func (s *Store) GetTags() ([]string, error) {
 	var tags []string
-	notesInt, err := s.GetAll()
+	notes, err := s.GetAll()
 	if err != nil {
 		return nil, err
 	}
-	notes, _ := notesInt.([]Note)
 	for _, note := range notes {
 		for _, tag := range note.Tags {
 			if !containsTag(tags, tag) {
@@ -140,7 +144,7 @@ func (s *Store) DeleteByTags(tags []string) error {
 }
 
 // Search for notes by tags, description or command from MongoDB
-func (s *Store) Search(searchWords []string, searchLocations []string) (interface{}, error) {
+func (s *Store) Search(searchWords []string, searchLocations []string) ([]storage.Note, error) {
 	filterLocs := []bson.M{}
 	for _, searchLocation := range searchLocations {
 		for _, searchWord := range searchWords {
@@ -159,7 +163,7 @@ func (s *Store) Search(searchWords []string, searchLocations []string) (interfac
 	return s.find(bson.M{"$or": filterLocs})
 }
 
-func (s *Store) find(filter bson.M) ([]Note, error) {
+func (s *Store) find(filter bson.M) ([]storage.Note, error) {
 	cur, err := s.db.Find(context.Background(), filter, options.Find().SetSort(bson.D{{Key: "_id", Value: 1}}))
 	if err != nil {
 		return nil, err
@@ -168,7 +172,11 @@ func (s *Store) find(filter bson.M) ([]Note, error) {
 	if err := cur.All(context.Background(), &notes); err != nil {
 		return nil, err
 	}
-	return notes, nil
+	result := make([]storage.Note, len(notes))
+	for i, note := range notes {
+		result[i] = note.toStorage()
+	}
+	return result, nil
 }
 
 func containsTag(tags []string, tag string) bool {

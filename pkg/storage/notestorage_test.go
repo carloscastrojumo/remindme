@@ -1,23 +1,18 @@
 package storage
 
 import (
-	"path/filepath"
 	"slices"
 	"testing"
-
-	"github.com/carloscastrojumo/remindme/pkg/storage/yaml"
 )
 
-func newYAMLService(t *testing.T) *NoteService {
-	t.Helper()
-	store, err := GetStorage(&Config{
-		StorageType:   "yaml",
-		StorageConfig: &yaml.Config{Name: filepath.Join(t.TempDir(), "data.yaml")},
-	})
-	if err != nil {
-		t.Fatalf("GetStorage: %v", err)
-	}
-	return NewNoteService(store)
+type memStore struct {
+	NoteStorage
+	notes []Note
+}
+
+func (m *memStore) Insert(note Note) error {
+	m.notes = append(m.notes, note)
+	return nil
 }
 
 func TestAddRejectsMissingFields(t *testing.T) {
@@ -34,42 +29,32 @@ func TestAddRejectsMissingFields(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			service := newYAMLService(t)
+			store := &memStore{}
 
-			if err := service.Add(tt.note); err == nil {
+			if err := NewNoteService(store).Add(tt.note); err == nil {
 				t.Fatal("Add returned nil error")
 			}
-
-			all, err := service.GetAll()
-			if err != nil {
-				t.Fatalf("GetAll: %v", err)
-			}
-			if notes := all.([]yaml.Note); len(notes) != 0 {
-				t.Errorf("invalid note was stored: %+v", notes)
+			if len(store.notes) != 0 {
+				t.Errorf("invalid note was stored: %+v", store.notes)
 			}
 		})
 	}
 }
 
 func TestAddTrimsFields(t *testing.T) {
-	service := newYAMLService(t)
+	store := &memStore{}
 
-	if err := service.Add(Note{Command: " ls -la ", Tags: []string{" shell", "", "files "}}); err != nil {
+	if err := NewNoteService(store).Add(Note{Command: " ls -la ", Tags: []string{" shell", "", "files "}}); err != nil {
 		t.Fatalf("Add: %v", err)
 	}
 
-	all, err := service.GetAll()
-	if err != nil {
-		t.Fatalf("GetAll: %v", err)
+	if len(store.notes) != 1 {
+		t.Fatalf("stored %d notes, want 1", len(store.notes))
 	}
-	notes := all.([]yaml.Note)
-	if len(notes) != 1 {
-		t.Fatalf("stored %d notes, want 1", len(notes))
+	if store.notes[0].Command != "ls -la" {
+		t.Errorf("Command = %q, want %q", store.notes[0].Command, "ls -la")
 	}
-	if notes[0].Command != "ls -la" {
-		t.Errorf("Command = %q, want %q", notes[0].Command, "ls -la")
-	}
-	if want := []string{"shell", "files"}; !slices.Equal(notes[0].Tags, want) {
-		t.Errorf("Tags = %q, want %q", notes[0].Tags, want)
+	if want := []string{"shell", "files"}; !slices.Equal(store.notes[0].Tags, want) {
+		t.Errorf("Tags = %q, want %q", store.notes[0].Tags, want)
 	}
 }
