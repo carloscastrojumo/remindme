@@ -17,6 +17,7 @@ jobs:
         with:
           # staticcheck 2026.2.1 can't read Go 1.27.2 export data (dominikh/go-tools#1832); move to 1.27 once fixed
           go-version: "1.26"
+          check-latest: true
 
       - name: Verify dependencies
         run: go mod verify
