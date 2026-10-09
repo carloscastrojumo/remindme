@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/carloscastrojumo/remindme/pkg/output"
+	"github.com/carloscastrojumo/remindme/internal/output"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )

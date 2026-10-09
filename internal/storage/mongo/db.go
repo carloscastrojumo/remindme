@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/carloscastrojumo/remindme/pkg/storage"
+	"github.com/carloscastrojumo/remindme/internal/storage"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

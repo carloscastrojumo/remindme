@@ -8,10 +8,10 @@ import (
 	"strconv"
 
 	"github.com/adrg/xdg"
-	prompt "github.com/carloscastrojumo/remindme/pkg/prompt"
-	"github.com/carloscastrojumo/remindme/pkg/storage"
-	"github.com/carloscastrojumo/remindme/pkg/storage/mongo"
-	"github.com/carloscastrojumo/remindme/pkg/storage/yaml"
+	prompt "github.com/carloscastrojumo/remindme/internal/prompt"
+	"github.com/carloscastrojumo/remindme/internal/storage"
+	"github.com/carloscastrojumo/remindme/internal/storage/mongo"
+	"github.com/carloscastrojumo/remindme/internal/storage/yaml"
 	"github.com/fatih/color"
 	"github.com/spf13/viper"
 )

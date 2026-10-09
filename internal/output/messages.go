@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/atotto/clipboard"
-	"github.com/carloscastrojumo/remindme/pkg/storage"
+	"github.com/carloscastrojumo/remindme/internal/storage"
 	"github.com/fatih/color"
 )
 

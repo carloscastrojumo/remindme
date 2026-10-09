@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/carloscastrojumo/remindme/pkg/storage"
+	"github.com/carloscastrojumo/remindme/internal/storage"
 	"github.com/fatih/color"
 	yaml "gopkg.in/yaml.v3"
 )

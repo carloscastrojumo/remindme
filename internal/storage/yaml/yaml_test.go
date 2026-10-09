@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/carloscastrojumo/remindme/pkg/storage"
+	"github.com/carloscastrojumo/remindme/internal/storage"
 )
 
 func newStore(t *testing.T, notes ...Note) (*Yaml, string) {

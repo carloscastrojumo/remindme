@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/carloscastrojumo/remindme/pkg/config"
-	"github.com/carloscastrojumo/remindme/pkg/storage"
+	"github.com/carloscastrojumo/remindme/internal/config"
+	"github.com/carloscastrojumo/remindme/internal/storage"
 	"github.com/spf13/cobra"
 )
 

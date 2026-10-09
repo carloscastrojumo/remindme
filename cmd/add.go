@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	prompt "github.com/carloscastrojumo/remindme/pkg/prompt"
-	"github.com/carloscastrojumo/remindme/pkg/storage"
+	prompt "github.com/carloscastrojumo/remindme/internal/prompt"
+	"github.com/carloscastrojumo/remindme/internal/storage"
 	"github.com/spf13/cobra"
 )
 

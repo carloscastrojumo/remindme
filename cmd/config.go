@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/carloscastrojumo/remindme/pkg/config"
+	"github.com/carloscastrojumo/remindme/internal/config"
 	"github.com/spf13/cobra"
 )
 
