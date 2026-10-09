@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+project_name: remindme
+
+builds:
+  - id: rmm
+    main: .
+    binary: rmm
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - "386"
+      - amd64
+      - arm64
+    ignore:
+      - goos: darwin
+        goarch: "386"
+      - goos: windows
+        goarch: arm64
+
+archives:
+  - name_template: "rmm-{{ .Tag }}-{{ .Os }}-{{ .Arch }}"
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+checksum:
+  name_template: checksums.txt
+
+homebrew_casks:
+  - name: remindme
+    binaries:
+      - rmm
+    homepage: https://github.com/carloscastrojumo/remindme
+    description: Bookmarks for the commands you use frequently
+    repository:
+      owner: carloscastrojumo
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    # Skip publishing until the tap repository and HOMEBREW_TAP_GITHUB_TOKEN secret exist
+    skip_upload: '{{ if isEnvSet "HOMEBREW_TAP_GITHUB_TOKEN" }}auto{{ else }}true{{ end }}'
+    hooks:
+      post:
+        # The binaries are not signed; without this Gatekeeper blocks rmm on macOS
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/rmm"]
+          end
