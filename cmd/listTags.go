@@ -1,8 +1,9 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/carloscastrojumo/remindme/pkg/output"
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -10,12 +11,13 @@ var listTags = &cobra.Command{
 	Use:   "tags",
 	Short: "List all tags available",
 	Long:  "List all tags available",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		tags, err := noteService.GetTags()
 		if err != nil {
-			color.Red("Error while getting notes by tags: %s", err)
+			return fmt.Errorf("get tags: %w", err)
 		}
 		output.PrintTags(tags)
+		return nil
 	},
 }
 

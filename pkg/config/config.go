@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -19,31 +20,28 @@ var appDir = xdg.Home + "/.config/remindme"
 var config = &storage.Config{}
 
 // InitConfig initializes the configuration
-func InitConfig() {
+func InitConfig() error {
 	viper.AddConfigPath(appDir)
 	viper.SetConfigName("config")
 
 	// create new folder if it doesn't exist
-	if _, err := os.Stat(appDir); os.IsNotExist(err) {
-		if os.Mkdir(appDir, 0755) != nil {
-			color.Red("Error while creating config folder: %s", err)
-		}
+	if err := os.MkdirAll(appDir, 0755); err != nil {
+		return fmt.Errorf("create config folder %s: %w", appDir, err)
 	}
 
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found; create one
-			fmt.Fprintf(os.Stderr, "Config file not found, creating one")
-			promptConfigFile()
-		} else {
-			// Config file was found but another error was produced
-			fmt.Fprintf(os.Stderr, "Whoops. There was an error while reading your config file '%s'", err)
-			os.Exit(1)
-		}
+	err := viper.ReadInConfig()
+	var notFound viper.ConfigFileNotFoundError
+	if errors.As(err, &notFound) {
+		fmt.Fprintln(os.Stderr, "Config file not found, creating one")
+		return promptConfigFile()
 	}
+	if err != nil {
+		return fmt.Errorf("read config file: %w", err)
+	}
+	return nil
 }
 
-func promptConfigFile() {
+func promptConfigFile() error {
 	storageType := prompt.ForString("What storage type do you want to use? (mongo, yaml) [yaml]")
 	if len(storageType) == 0 {
 		storageType = "yaml"
@@ -65,28 +63,28 @@ func promptConfigFile() {
 		viper.Set("yaml.name", appDir+"/"+dataFilename)
 	}
 
-	saveConfigFile()
+	return saveConfigFile()
 }
 
-func saveConfigFile() {
+func saveConfigFile() error {
 	configDir := xdg.Home + "/.config/remindme"
 	viper.AddConfigPath(configDir)
-	viper.WriteConfigAs(configDir + "/config.yaml")
+	if err := viper.WriteConfigAs(configDir + "/config.yaml"); err != nil {
+		return fmt.Errorf("write config file: %w", err)
+	}
+	return nil
 }
 
 // GetNoteService returns a new note service
-func GetNoteService() *storage.NoteService {
+func GetNoteService() (*storage.NoteService, error) {
 	config.StorageType = viper.GetString("storageType")
 
 	switch config.StorageType {
 	case "mongo":
 		color.Blue("Using Mongo storage")
 		var mongoConfig mongo.Config
-		err := viper.UnmarshalKey("mongo", &mongoConfig)
-
-		if err != nil {
-			color.Red("Could not read %s configuration: '%s'", config.StorageType, err)
-			os.Exit(1)
+		if err := viper.UnmarshalKey("mongo", &mongoConfig); err != nil {
+			return nil, fmt.Errorf("read %s configuration: %w", config.StorageType, err)
 		}
 
 		config.StorageConfig = &mongoConfig
@@ -94,30 +92,25 @@ func GetNoteService() *storage.NoteService {
 	case "yaml":
 		color.Blue("Using YAML storage")
 		var yamlConfig yaml.Config
-		err := viper.UnmarshalKey("yaml", &yamlConfig)
-
-		if err != nil {
-			color.Red("Whoops. Could not read %s configuration: '%s'", config.StorageType, err)
-			os.Exit(1)
+		if err := viper.UnmarshalKey("yaml", &yamlConfig); err != nil {
+			return nil, fmt.Errorf("read %s configuration: %w", config.StorageType, err)
 		}
 
 		config.StorageConfig = &yamlConfig
 
 	default:
-		color.Red("No storage type found")
-		os.Exit(1)
+		return nil, fmt.Errorf("unsupported storage type %q, expected mongo or yaml", config.StorageType)
 	}
 
 	return initNoteService(config)
 }
 
-func initNoteService(storageConfig *storage.Config) *storage.NoteService {
+func initNoteService(storageConfig *storage.Config) (*storage.NoteService, error) {
 	storeService, err := storage.GetStorage(storageConfig)
 	if err != nil {
-		color.Red("Could not initialize %s storage: %s", storageConfig.StorageType, err)
-		os.Exit(1)
+		return nil, fmt.Errorf("initialize %s storage: %w", storageConfig.StorageType, err)
 	}
-	return storage.NewNoteService(storeService)
+	return storage.NewNoteService(storeService), nil
 }
 
 // GetConfig prints the current configuration to screen

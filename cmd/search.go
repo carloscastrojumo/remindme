@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/carloscastrojumo/remindme/pkg/output"
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -32,7 +32,7 @@ var searchCmd = &cobra.Command{
 		words := strings.Split(args[0], " ")
 		notes, err := noteService.Search(words, searchLocations)
 		if err != nil {
-			color.Red("Error while getting notes by tags: %s", err)
+			return fmt.Errorf("search notes: %w", err)
 		}
 		output.Print(notes)
 

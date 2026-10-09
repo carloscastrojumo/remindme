@@ -21,17 +21,18 @@ var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add new note to the database",
 	Long:  `Add new note to the database`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		// if the user didn't provide any flags, we prompt for the note
 		if note.Command == "" && note.Description == "" && len(note.Tags) == 0 {
 			note = promptNote()
 		}
 
 		if err := noteService.Add(note); err != nil {
-			panic(err)
+			return fmt.Errorf("add note: %w", err)
 		}
 
 		fmt.Println("Note added successfully")
+		return nil
 	},
 }
 

@@ -79,7 +79,10 @@ func (s *Store) GetAll() (interface{}, error) {
 // GetTags returns all available tags
 func (s *Store) GetTags() ([]string, error) {
 	var tags []string
-	notesInt, _ := s.GetAll()
+	notesInt, err := s.GetAll()
+	if err != nil {
+		return nil, err
+	}
 	notes, _ := notesInt.([]Note)
 	for _, note := range notes {
 		for _, tag := range note.Tags {
@@ -129,7 +132,7 @@ func (s *Store) Search(searchWords []string, searchLocations []string) (interfac
 }
 
 func (s *Store) find(filter bson.M) ([]Note, error) {
-	cur, err := s.db.Find(context.Background(), filter)
+	cur, err := s.db.Find(context.Background(), filter, options.Find().SetSort(bson.D{{Key: "_id", Value: 1}}))
 	if err != nil {
 		return nil, err
 	}
