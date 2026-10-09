@@ -80,6 +80,18 @@ func TestDeleteUnknownIDReturnsError(t *testing.T) {
 	}
 }
 
+func TestNotesFileIsOwnerOnly(t *testing.T) {
+	_, path := newStore(t, Note{Command: "a", Tags: []string{"x"}})
+
+	fi, err := os.Stat(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if perm := fi.Mode().Perm(); perm&0077 != 0 {
+		t.Errorf("notes file permissions = %v, want no group/other access", perm)
+	}
+}
+
 func TestInitializeRejectsCorruptFile(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "data.yaml")
 	if err := os.WriteFile(path, []byte("::: not yaml ["), 0644); err != nil {

@@ -25,7 +25,7 @@ func InitConfig() error {
 	viper.SetConfigName("config")
 
 	// create new folder if it doesn't exist
-	if err := os.MkdirAll(appDir, 0755); err != nil {
+	if err := os.MkdirAll(appDir, 0700); err != nil {
 		return fmt.Errorf("create config folder %s: %w", appDir, err)
 	}
 
@@ -78,6 +78,7 @@ func promptConfigFile() error {
 func saveConfigFile() error {
 	configDir := xdg.Home + "/.config/remindme"
 	viper.AddConfigPath(configDir)
+	viper.SetConfigPermissions(0600)
 	if err := viper.WriteConfigAs(configDir + "/config.yaml"); err != nil {
 		return fmt.Errorf("write config file: %w", err)
 	}

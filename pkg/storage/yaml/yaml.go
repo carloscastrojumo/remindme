@@ -36,7 +36,7 @@ type Config struct {
 // Initialize the YAML storage
 func Initialize(config *Config) (*Yaml, error) {
 	// check if file exists, if not create it
-	f, err := os.OpenFile(config.Name, os.O_RDWR|os.O_CREATE, 0644)
+	f, err := os.OpenFile(config.Name, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		return nil, fmt.Errorf("open notes file %s: %w", config.Name, err)
 	}
@@ -92,7 +92,7 @@ func (y *Yaml) save() error {
 		return errors.New("error while marshalling notes")
 	}
 
-	if err := os.WriteFile(y.File.Name(), data, 0644); err != nil {
+	if err := os.WriteFile(y.File.Name(), data, 0600); err != nil {
 		return errors.New("error while writing notes to file")
 	}
 	return nil
