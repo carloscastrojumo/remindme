@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -33,11 +34,24 @@ type Store struct {
 	db *mongo.Collection
 }
 
+const connectTimeout = 5 * time.Second
+
 // Initialize MongoDB client
 func Initialize(config *Config) (*Store, error) {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://"+config.Host+":"+strconv.Itoa(config.Port)))
+	address := config.Host + ":" + strconv.Itoa(config.Port)
+	opts := options.Client().
+		ApplyURI("mongodb://" + address).
+		SetConnectTimeout(connectTimeout).
+		SetServerSelectionTimeout(connectTimeout)
+	client, err := mongo.Connect(context.Background(), opts)
 	if err != nil {
-		return nil, fmt.Errorf("connect to MongoDB at %s:%d: %w", config.Host, config.Port, err)
+		return nil, fmt.Errorf("connect to MongoDB at %s: %w", address, err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), connectTimeout)
+	defer cancel()
+	if err := client.Ping(ctx, nil); err != nil {
+		return nil, fmt.Errorf("MongoDB not reachable at %s: %w", address, err)
 	}
 	return &Store{db: client.Database(config.Database).Collection(config.Collection)}, nil
 }
