@@ -66,19 +66,17 @@ func (s *Store) Get(id string) (interface{}, error) {
 // GetByTags gets notes by tags from MongoDB
 func (s *Store) GetByTags(tags []string) (interface{}, error) {
 	notes := make(map[string]Note)
-	for _, tag := range tags {
-		filter := bson.M{"tags": bson.M{"$in": []string{tag}}}
-		cur, err := s.db.Find(context.Background(), filter)
-		if err != nil {
+	filter := bson.M{"tags": bson.M{"$in": tags}}
+	cur, err := s.db.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	for cur.Next(context.Background()) {
+		var n Note
+		if err := cur.Decode(&n); err != nil {
 			return nil, err
 		}
-		for cur.Next(context.Background()) {
-			var n Note
-			if err := cur.Decode(&n); err != nil {
-				return nil, err
-			}
-			notes[n.ID.String()] = n
-		}
+		notes[n.ID.String()] = n
 	}
 
 	var result []Note
@@ -141,15 +139,9 @@ func (s *Store) Delete(id string) error {
 
 // DeleteByTags deletes notes by tags from MongoDB
 func (s *Store) DeleteByTags(tags []string) error {
-	for _, tag := range tags {
-		filter := bson.M{"tags": bson.M{"$in": []string{tag}}}
-		_, err := s.db.DeleteMany(context.Background(), filter)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	filter := bson.M{"tags": bson.M{"$in": tags}}
+	_, err := s.db.DeleteMany(context.Background(), filter)
+	return err
 }
 
 // Search for notes by tags, description or command from MongoDB
