@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	mongo "github.com/carloscastrojumo/remindme/pkg/storage/mongo"
@@ -43,16 +44,24 @@ type Note struct {
 var storageType string
 
 // GetStorage returns the storage type
-func GetStorage(config *Config) NoteStorage {
+func GetStorage(config *Config) (NoteStorage, error) {
 	switch config.StorageType {
 	case "yaml":
 		storageType = "yaml"
-		return yaml.Initialize(config.StorageConfig.(*yaml.Config))
+		store, err := yaml.Initialize(config.StorageConfig.(*yaml.Config))
+		if err != nil {
+			return nil, err
+		}
+		return store, nil
 	case "mongo":
 		storageType = "mongo"
-		return mongo.Initialize(config.StorageConfig.(*mongo.Config))
+		store, err := mongo.Initialize(config.StorageConfig.(*mongo.Config))
+		if err != nil {
+			return nil, err
+		}
+		return store, nil
 	}
-	return nil
+	return nil, fmt.Errorf("storage type %q not supported", config.StorageType)
 }
 
 // NewNoteService returns a new note service

@@ -112,7 +112,11 @@ func GetNoteService() *storage.NoteService {
 }
 
 func initNoteService(storageConfig *storage.Config) *storage.NoteService {
-	storeService := storage.GetStorage(storageConfig)
+	storeService, err := storage.GetStorage(storageConfig)
+	if err != nil {
+		color.Red("Could not initialize %s storage: %s", storageConfig.StorageType, err)
+		os.Exit(1)
+	}
 	return storage.NewNoteService(storeService)
 }
 

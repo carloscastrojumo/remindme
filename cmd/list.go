@@ -19,7 +19,7 @@ var listCmd = &cobra.Command{
 			if note, err := noteService.Get(id); err != nil {
 				color.Red("Error: %s", err)
 			} else {
-				output.Print(note)
+				output.Print([]interface{}{note})
 			}
 		}
 

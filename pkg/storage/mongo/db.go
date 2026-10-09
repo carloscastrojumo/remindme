@@ -2,7 +2,8 @@ package mongo
 
 import (
 	"context"
-	"log"
+	"errors"
+	"fmt"
 	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -33,12 +34,12 @@ type Store struct {
 }
 
 // Initialize MongoDB client
-func Initialize(config *Config) *Store {
+func Initialize(config *Config) (*Store, error) {
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://"+config.Host+":"+strconv.Itoa(config.Port)))
 	if err != nil {
-		log.Fatal("MongoDB not running", err)
+		return nil, fmt.Errorf("connect to MongoDB at %s:%d: %w", config.Host, config.Port, err)
 	}
-	return &Store{db: client.Database(config.Database).Collection(config.Collection)}
+	return &Store{db: client.Database(config.Database).Collection(config.Collection)}, nil
 }
 
 // Insert a note into MongoDB
@@ -51,13 +52,15 @@ func (s *Store) Insert(item interface{}) error {
 func (s *Store) Get(id string) (interface{}, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid note id %q: %w", id, err)
 	}
 	filter := bson.M{"_id": objID}
-	// return s.db.FindOne(context.Background(), filter).DecodeBytes()
 	result := Note{}
 	err = s.db.FindOne(context.Background(), filter).Decode(&result)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return nil, fmt.Errorf("note %s not found", id)
+	}
+	if err != nil {
 		return nil, err
 	}
 	return result, nil
@@ -65,50 +68,12 @@ func (s *Store) Get(id string) (interface{}, error) {
 
 // GetByTags gets notes by tags from MongoDB
 func (s *Store) GetByTags(tags []string) (interface{}, error) {
-	notes := make(map[string]Note)
-	filter := bson.M{"tags": bson.M{"$in": tags}}
-	cur, err := s.db.Find(context.Background(), filter)
-	if err != nil {
-		return nil, err
-	}
-	for cur.Next(context.Background()) {
-		var n Note
-		if err := cur.Decode(&n); err != nil {
-			return nil, err
-		}
-		notes[n.ID.String()] = n
-	}
-
-	var result []Note
-	for _, v := range notes {
-		result = append(result, v)
-	}
-
-	return result, nil
+	return s.find(bson.M{"tags": bson.M{"$in": tags}})
 }
 
 // GetAll gets all notes from MongoDB
 func (s *Store) GetAll() (interface{}, error) {
-	notes := make(map[string]Note)
-	filter := bson.M{}
-	cur, err := s.db.Find(context.Background(), filter)
-	if err != nil {
-		return nil, err
-	}
-	for cur.Next(context.Background()) {
-		var n Note
-		if err := cur.Decode(&n); err != nil {
-			return nil, err
-		}
-		notes[n.ID.String()] = n
-	}
-
-	var result []Note
-	for _, v := range notes {
-		result = append(result, v)
-	}
-
-	return result, nil
+	return s.find(bson.M{})
 }
 
 // GetTags returns all available tags
@@ -146,7 +111,6 @@ func (s *Store) DeleteByTags(tags []string) error {
 
 // Search for notes by tags, description or command from MongoDB
 func (s *Store) Search(searchWords []string, searchLocations []string) (interface{}, error) {
-	notes := make(map[string]Note)
 	filterLocs := []bson.M{}
 	for _, searchLocation := range searchLocations {
 		for _, searchWord := range searchWords {
@@ -161,25 +125,19 @@ func (s *Store) Search(searchWords []string, searchLocations []string) (interfac
 		}
 	}
 
-	filter := bson.M{"$or": filterLocs}
+	return s.find(bson.M{"$or": filterLocs})
+}
+
+func (s *Store) find(filter bson.M) ([]Note, error) {
 	cur, err := s.db.Find(context.Background(), filter)
 	if err != nil {
 		return nil, err
 	}
-	for cur.Next(context.Background()) {
-		var n Note
-		if err := cur.Decode(&n); err != nil {
-			return nil, err
-		}
-		notes[n.ID.String()] = n
+	var notes []Note
+	if err := cur.All(context.Background(), &notes); err != nil {
+		return nil, err
 	}
-
-	var result []Note
-	for _, v := range notes {
-		result = append(result, v)
-	}
-
-	return result, nil
+	return notes, nil
 }
 
 func containsTag(tags []string, tag string) bool {

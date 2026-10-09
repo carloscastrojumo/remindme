@@ -2,9 +2,10 @@ package yaml
 
 import (
 	"errors"
-	"log"
+	"fmt"
 	"math/rand"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -33,11 +34,11 @@ type Config struct {
 }
 
 // Initialize the YAML storage
-func Initialize(config *Config) *Yaml {
+func Initialize(config *Config) (*Yaml, error) {
 	// check if file exists, if not create it
 	f, err := os.OpenFile(config.Name, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("open notes file %s: %w", config.Name, err)
 	}
 	defer f.Close()
 
@@ -45,14 +46,19 @@ func Initialize(config *Config) *Yaml {
 
 	var notes []Note
 
+	fi, err := f.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("stat notes file %s: %w", config.Name, err)
+	}
+
 	// check if file siza > 0, if so read file and unmarshal it to Notes struct
-	if fi, _ := f.Stat(); fi.Size() > 0 {
+	if fi.Size() > 0 {
 		if err := yaml.NewDecoder(f).Decode(&notes); err != nil {
-			return nil
+			return nil, fmt.Errorf("parse notes file %s: %w", config.Name, err)
 		}
 	}
 
-	return &Yaml{File: f, Notes: notes}
+	return &Yaml{File: f, Notes: notes}, nil
 }
 
 // Insert inserts a new note to YAML storage
@@ -100,7 +106,7 @@ func (y *Yaml) Get(id string) (interface{}, error) {
 		}
 	}
 
-	return nil, nil
+	return nil, fmt.Errorf("note %s not found", id)
 }
 
 // GetByTags returns notes by tags
@@ -150,15 +156,14 @@ func (y *Yaml) Delete(id string) error {
 
 // DeleteByTags deletes notes by tags
 func (y *Yaml) DeleteByTags(tags []string) error {
-	for i, note := range y.Notes {
+	y.Notes = slices.DeleteFunc(y.Notes, func(note Note) bool {
 		for _, tag := range tags {
-			for _, noteTag := range note.Tags {
-				if noteTag == tag {
-					y.Notes = append(y.Notes[:i], y.Notes[i+1:]...)
-				}
+			if containsTag(note.Tags, tag) {
+				return true
 			}
 		}
-	}
+		return false
+	})
 	return y.save()
 }
 
