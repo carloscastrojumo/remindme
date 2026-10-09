@@ -11,6 +11,7 @@ import (
 	prompt "github.com/carloscastrojumo/remindme/internal/prompt"
 	"github.com/carloscastrojumo/remindme/internal/storage"
 	"github.com/carloscastrojumo/remindme/internal/storage/mongo"
+	"github.com/carloscastrojumo/remindme/internal/storage/sqlite"
 	"github.com/carloscastrojumo/remindme/internal/storage/yaml"
 	"github.com/fatih/color"
 	"github.com/spf13/viper"
@@ -57,7 +58,7 @@ func InitConfig() error {
 }
 
 func promptConfigFile() error {
-	storageType, err := prompt.ForString("What storage type do you want to use? (mongo, yaml) [yaml]")
+	storageType, err := prompt.ForString("What storage type do you want to use? (mongo, sqlite, yaml) [yaml]")
 	if err != nil {
 		return err
 	}
@@ -85,6 +86,15 @@ func promptConfigFile() error {
 			dataFilename = "data.yaml"
 		}
 		viper.Set("yaml.name", filepath.Join(appDir, dataFilename))
+	case "sqlite":
+		dataFilename, err := prompt.ForString("SQLite file name (current directory: " + appDir + ") [notes.db]")
+		if err != nil {
+			return err
+		}
+		if len(dataFilename) == 0 {
+			dataFilename = "notes.db"
+		}
+		viper.Set("sqlite.path", filepath.Join(appDir, dataFilename))
 	}
 
 	return saveConfigFile()
@@ -132,8 +142,22 @@ func GetNoteService() (*storage.NoteService, error) {
 		}
 		store = yamlStore
 
+	case "sqlite":
+		color.New(color.FgBlue).Fprintln(os.Stderr, "Using SQLite storage")
+		var sqliteConfig sqlite.Config
+		if err := viper.UnmarshalKey("sqlite", &sqliteConfig); err != nil {
+			return nil, fmt.Errorf("read %s configuration: %w", storageType, err)
+		}
+		storageConfig = &sqliteConfig
+
+		sqliteStore, err := sqlite.Initialize(&sqliteConfig)
+		if err != nil {
+			return nil, fmt.Errorf("initialize %s storage: %w", storageType, err)
+		}
+		store = sqliteStore
+
 	default:
-		return nil, fmt.Errorf("unsupported storage type %q, expected mongo or yaml", storageType)
+		return nil, fmt.Errorf("unsupported storage type %q, expected mongo, sqlite or yaml", storageType)
 	}
 
 	return storage.NewNoteService(store), nil
@@ -145,6 +169,8 @@ func GetConfig() {
 	switch c := storageConfig.(type) {
 	case *yaml.Config:
 		color.Blue("Data file: %s\n", color.GreenString(c.Name))
+	case *sqlite.Config:
+		color.Blue("Database file: %s\n", color.GreenString(c.Path))
 	case *mongo.Config:
 		color.Blue("Host: %s\n", color.GreenString(c.Host))
 		color.Blue("Port: %s\n", color.GreenString(strconv.Itoa(c.Port)))
