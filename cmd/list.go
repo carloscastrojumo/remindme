@@ -1,32 +1,34 @@
 package cmd
 
 import (
-	"github.com/carloscastrojumo/remindme/pkg/output"
-	"github.com/fatih/color"
+	"fmt"
+
+	"github.com/carloscastrojumo/remindme/internal/output"
+	"github.com/carloscastrojumo/remindme/internal/storage"
 	"github.com/spf13/cobra"
 )
 
 var listCmd = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"ls"},
-	Short:   "List notes to the database",
-	Long:    `Add new note to the database`,
-	Run: func(cmd *cobra.Command, args []string) {
-		tags, _ := cmd.Flags().GetStringArray("tags")
+	Short:   "List notes from the database",
+	Long:    `List notes from the database, optionally filtered by ID or tags`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		tags, _ := cmd.Flags().GetStringSlice("tags")
 		id, _ := cmd.Flags().GetString("id")
 
 		if id != "" {
-			if note, err := noteService.Get(id); err != nil {
-				color.Red("Error: %s", err)
-			} else {
-				output.Print(note)
+			note, err := noteService.Get(id)
+			if err != nil {
+				return err
 			}
+			output.Print([]storage.Note{note})
 		}
 
 		if len(tags) > 0 {
 			notes, err := noteService.GetByTags(tags)
 			if err != nil {
-				color.Red("Error while getting notes by tags: %s", err)
+				return fmt.Errorf("get notes by tags: %w", err)
 			}
 			output.Print(notes)
 		}
@@ -34,15 +36,16 @@ var listCmd = &cobra.Command{
 		if len(tags) == 0 && id == "" {
 			notes, err := noteService.GetAll()
 			if err != nil {
-				color.Red("Error while getting all notes: %s", err)
+				return fmt.Errorf("get all notes: %w", err)
 			}
 			output.Print(notes)
 		}
+		return nil
 	},
 }
 
 func init() {
-	listCmd.Flags().StringArray("tags", []string{}, "Tags to add to the note")
+	listCmd.Flags().StringSlice("tags", []string{}, "Filter notes by tag, comma separated or repeated")
 	listCmd.Flags().String("id", "", "ID of the note")
 	rootCmd.AddCommand(listCmd)
 }
